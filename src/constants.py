@@ -39,12 +39,12 @@ class driveConsts:
     slowDriveScale = 0.5
 
 class armConsts:
-    rotationSpeedScaler = 0.1
+    rotationSpeedScaler = 1.0
     # armControlP = .06
     # armControlI = 0
     # armControlD = 0
     armPIDValues = PID(
-        0.01, # P
+        3.0, # P
         0.0, # I
         0.0 # D
     )
@@ -52,7 +52,7 @@ class armConsts:
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
-    gravityGain = 0.5
+    gravityGain = 0.15 # Originally 0.5
     countsPerRev = 2048
     motorToArmGearRatio = 82.5 # to 1
     rightEncoder = 5
@@ -65,8 +65,8 @@ class armConsts:
     maxAcc = 0.5
     slotID = 0
     intakeAngle = 0.0 # radians
-    speakerAngle = 0.4 # radians
-    ampAngle = 1.5 # radians
+    speakerAngle = 0.4 # 0.4 radians
+    ampAngle = 1.88 # 1.88 radians
     startingAngle = 1.0 # radians
     maxEncoderValue = 1.55
     minEncoderValue = 0.5
