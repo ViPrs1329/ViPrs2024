@@ -29,24 +29,24 @@
   },
   "Window": {
     "###DIO": {
-      "Collapsed": "0",
-      "Pos": "198,31",
-      "Size": "227,298"
+      "Collapsed": "1",
+      "Pos": "14,1332",
+      "Size": "145,60"
     },
     "###Encoders": {
       "Collapsed": "0",
       "Pos": "427,29",
-      "Size": "153,95"
+      "Size": "117,60"
     },
     "###FMS": {
-      "Collapsed": "0",
-      "Pos": "21,893",
+      "Collapsed": "1",
+      "Pos": "13,1185",
       "Size": "388,176"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "1374,1092",
-      "Size": "1156,91"
+      "Pos": "20,837",
+      "Size": "1156,316"
     },
     "###Keyboard 0 Settings": {
       "Collapsed": "0",
@@ -55,38 +55,38 @@
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "1542,45",
-      "Size": "708,407"
+      "Pos": "410,164",
+      "Size": "708,631"
     },
     "###NetworkTables Info": {
-      "Collapsed": "0",
-      "Pos": "1508,602",
+      "Collapsed": "1",
+      "Pos": "17,1292",
       "Size": "737,380"
     },
     "###Other Devices": {
       "Collapsed": "0",
-      "Pos": "2299,23",
+      "Pos": "127,30",
       "Size": "250,695"
     },
     "###Plot <0>": {
       "Collapsed": "0",
-      "Pos": "605,109",
-      "Size": "700,400"
+      "Pos": "1167,42",
+      "Size": "748,1173"
     },
     "###RoboRIO": {
-      "Collapsed": "0",
-      "Pos": "2267,749",
+      "Collapsed": "1",
+      "Pos": "15,1221",
       "Size": "163,182"
     },
     "###System Joysticks": {
-      "Collapsed": "0",
-      "Pos": "31,521",
+      "Collapsed": "1",
+      "Pos": "19,1259",
       "Size": "273,290"
     },
     "###Timing": {
-      "Collapsed": "0",
-      "Pos": "5,281",
-      "Size": "188,215"
+      "Collapsed": "1",
+      "Pos": "255,1334",
+      "Size": "188,186"
     },
     "Debug##Default": {
       "Collapsed": "0",

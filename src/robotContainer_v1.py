@@ -1,14 +1,16 @@
+
 import commands2.button
-from commands2 import SequentialCommandGroup
+import commands2.cmd
+import numpy as DrArnett
+
+
+from commands2 import SequentialCommandGroup, FunctionalCommand
 from commands2.button import CommandXboxController
 
-# Import subsystems
 from subSystems.REVDriveSubsystem import DriveSubsystem
 from subSystems.armSubsystem import ArmSubsystem
 from subSystems.intakeSubsystem import IntakeSubsystem
 from subSystems.shooterSubsystem import ShooterSubsystem
-
-# Import commands
 from commands.intake.intakeCollectNoteCmd import IntakeCollectNoteCmd
 from commands.intake.intakeRetractNoteCmd import IntakeRetractNoteCmd
 from commands.intake.intakeAndRetractCmd import IntakeAndRetractCommand
@@ -23,39 +25,31 @@ from commands.arm.MoveArmCmds import MoveArmToIntakePosition, MoveArmToScoreHigh
 from commands.drive.arcadeDriveCmd import ArcadeDriveCmd
 from commands.drive.driveSlowCmd import ToggleSlowModeCmd
 from commands.drive.toggleReverseDriveCmd import ToggleReverseDriveCmd
-
-# Import constants
 from constants import States, intakeConsts, inputConsts, driveConsts
 from subSystems.robotState import RobotState
 
 class RobotContainer:
-    """
-    This class is where the bulk of the robot's resources are declared. Here, subsystems
-    are instantiated and commands and button bindings are configured.
-    """
+    
     def __init__(self):
-        self.initSubsystems()
-        self.initControls()
-        self.initCommands()
-        self.configureButtonBindings()
+        # State mechanics
+        self.robotState = RobotState()
 
-    def initSubsystems(self):
-        """Instantiate the robot's subsystems."""
-        self.robotDrive = DriveSubsystem()
-        self.arm = ArmSubsystem()
-        self.intake = IntakeSubsystem()
-        self.shooter = ShooterSubsystem()
-        # Configurations for subsystems
-        self.robotDrive.setMaxOutput(driveConsts.driveMaxOutput)
-
-    def initControls(self):
-        """Instantiate the robot's control objects"""
+        # Control devices
         self.driverController = commands2.button.CommandXboxController(0)
         self.rightTriggerPressed = self.driverController.rightTrigger(threshold=0.5)
         self.leftTriggerPressed = commands2.button.Trigger(lambda: self.driverController.getLeftTriggerAxis() > 0.5)
 
-    def initCommands(self):
-        """Instantiate the robot's commands."""
+        # Subsystem inits
+        self.robotDrive = DriveSubsystem()
+        self.arm = ArmSubsystem()
+        self.intake = IntakeSubsystem()
+        self.shooter = ShooterSubsystem()
+
+        # Subsystem configs
+        self.robotDrive.setMaxOutput(driveConsts.driveMaxOutput)
+
+        # Command inits
+
         # Arm commands
         self.moveToStartingPosition = MoveArmToStartingPosition(self.arm)
         self.moveToScoreHigh = MoveArmToScoreHigh(self.arm)
@@ -64,7 +58,7 @@ class RobotContainer:
 
         # Intake commands
         self.collectCmd = IntakeCollectNoteCmd(self.intake, intakeConsts.captureSpeed)
-        self.retractCmd = IntakeRetractNoteCmd(self.intake, intakeConsts.releaseSpeed, intakeConsts.retractTime)
+        self.retractCmd = IntakeRetractNoteCmd(self.intake, intakeConsts.releaseSpeed, intakeConsts.retractTime)  # Example values for retract speed and time
         self.intakeAndRetractCommand = IntakeAndRetractCommand(self.intake, intakeConsts.releaseSpeed, intakeConsts.retractTime)
         self.intakeStartCmd = IntakeStartCmd(self.intake, intakeConsts.captureSpeed)
         self.stopIntakeCmd = StopIntakeCmd(self.intake)
@@ -86,18 +80,21 @@ class RobotContainer:
         self.intakeCommandGroup = SequentialCommandGroup(self.intakeStartCmd, self.detectNoteCmd, self.retractCmd)
         # self.intakeCommandGroup = SequentialCommandGroup(self.intakeStartCmd, self.detectNoteCmd, self.stopIntakeCmd)
 
+        # Configure buttons
+        self.configureButtonBindings()
+        
         # Set up default commands for subsystems
         self.robotDrive.setDefaultCommand(self.arcadeDriveCmd)
         # self.arm.setDefaultCommand(???)
         # self.intake.setDefaultCommand(???)
         # self.shooter.setDefaultCommand(???)
 
+
     def configureButtonBindings(self):
-        """Configure the button bindings for user input."""
-               
-        # Button A binding - Move arm to intake position
+        # Button A binding
+        # Move arm to intake position
         self.driverController.a().onTrue(self.moveToIntakePosition)
-        
+
         # Button B binding
         # self.driverController.b().toggleOnTrue(self.collectAndRetractCmd)
         # self.driverController.b().toggleOnTrue(self.collectCmd)  # Test simple intake
@@ -134,21 +131,18 @@ class RobotContainer:
         # "Back" button binding. (This looksl ike the menu button)
         self.driverController.back().onTrue(self.reverseDriveCmd)
 
+    
     def updateHardware(self):
-        """Call the update methods of each subsystem."""
         self.robotDrive.updateHardware()
         self.arm.updateHardware()
         self.intake.updateHardware()
         self.shooter.updateHardware()
 
     def cacheSensors(self):
-        """Retrieve and cache sensor data from each subsystem."""
         self.robotDrive.cacheSensors()
         self.arm.cacheSensors()
         self.intake.cacheSensors()
         self.shooter.cacheSensors()
 
     def getAutonomousCommand(self):
-        """Return the command to run in autonomous mode."""
-        # Placeholder for an autonomous command. Modify as needed.
         return commands2.cmd.none()

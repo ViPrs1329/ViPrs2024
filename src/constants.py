@@ -17,7 +17,7 @@ class CANIDs:
 
 class inputConsts:
     inputScale = 0.8
-    inputDeadZone = 0.05
+    inputDeadZone = 0.1
     rampRate = 0.05
 
 class convert:
@@ -39,11 +39,16 @@ class driveConsts:
     slowDriveScale = 0.5
 
 class armConsts:
-    rotationSpeedScaler = 3 # 0.5
+    rotationSpeedScaler = 0.1
     # armControlP = .06
     # armControlI = 0
     # armControlD = 0
-    armPIDValues = PID(0.01, 0.0, 0.0)
+    armPIDValues = PID(
+        0.01, # P
+        0.0, # I
+        0.0 # D
+    )
+    PIDTolerance = 0.1
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
@@ -56,8 +61,8 @@ class armConsts:
     rightRelativeEncoderB = 4
     leftRelativeEncoderA = 7
     leftRelativeEncoderB = 8
-    maxVelocity = 500
-    maxAcc = 500
+    maxVelocity = 1.0
+    maxAcc = 0.5
     slotID = 0
     intakeAngle = 0.0 # radians
     speakerAngle = 0.4 # radians
@@ -112,3 +117,4 @@ class States(Enum):
         ARM_SCORING_HIGH = auto()
         ARM_IDLE = auto()
         ARM_START_STATE = auto()
+

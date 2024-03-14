@@ -10,7 +10,7 @@
   {
     "name": "/subsystems/arm/setpoint",
     "type": "double",
-    "value": 0.06366197723675814,
+    "value": 0.238732414637843,
     "properties": {
       "persistent": true
     }
@@ -18,7 +18,7 @@
   {
     "name": "/subsystems/arm/righttCtrlEffort",
     "type": "double",
-    "value": 0.5006366197723676,
+    "value": 0.5023873241463784,
     "properties": {
       "persistent": true
     }
@@ -26,7 +26,7 @@
   {
     "name": "/subsystems/arm/leftCtrlEffort",
     "type": "double",
-    "value": 0.5006366197723676,
+    "value": 0.5023873241463784,
     "properties": {
       "persistent": true
     }

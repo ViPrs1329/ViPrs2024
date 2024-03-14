@@ -1,10 +1,127 @@
 import time
 import wpilib
+import commands2
+import rev
+import constants
+import numpy as np  # Changed Derek to np for conventional use
+
+from ntcore import NetworkTableInstance
+from wpimath.controller import ProfiledPIDController
+from wpimath.trajectory import TrapezoidProfile
+
+class ArmSubsystem(commands2.Subsystem):
+    def __init__(self):
+        super().__init__()
+        self.lastUpdateTime = time.time()
+        self.isActive = False
+        self.hasSetNewGoal = False
+
+        # Motor controller setup
+        self.armRight = rev.CANSparkMax(constants.CANIDs.rightArmSpark, rev.CANSparkMax.MotorType.kBrushless)
+        self.armLeft = rev.CANSparkMax(constants.CANIDs.leftArmSpark, rev.CANSparkMax.MotorType.kBrushless)
+        self.arm = wpilib.MotorControllerGroup(self.armRight, self.armLeft)
+        self.armRight.setInverted(True)
+        
+        # Encoder setup
+        self.armRightEncoder = wpilib.DutyCycleEncoder(constants.armConsts.rightEncoder)
+        self.armLeftEncoder = wpilib.DutyCycleEncoder(constants.armConsts.leftEncoder)
+        
+        # Limit switch setup
+        self.bottomLimit = wpilib.DigitalInput(constants.sensorConsts.armBottomLimit)
+        self.topLimit = wpilib.DigitalInput(constants.sensorConsts.armTopLimit)
+
+        # PID Controller setup
+        self.pPIDController = ProfiledPIDController(
+            constants.armConsts.armPIDValues.P,
+            constants.armConsts.armPIDValues.I,
+            constants.armConsts.armPIDValues.D,
+            TrapezoidProfile.Constraints(
+                constants.armConsts.maxVelocity,
+                constants.armConsts.maxAcc
+            )
+        )
+        self.pPIDController.setTolerance(constants.armConsts.PIDTolerance)
+
+        # NetworkTables setup for monitoring
+        self.ntinst = NetworkTableInstance.getDefault()
+        self.armTable = self.ntinst.getTable("subsystems/arm")
+        self.initNetworkTableEntries()
+
+    def initNetworkTableEntries(self):
+        """Initializes NetworkTable entries for monitoring and debugging."""
+        self.positionPublisher = self.armTable.getEntry("position")
+        self.setpointPublisher = self.armTable.getEntry("setpoint")
+        self.controlEffortPublisher = self.armTable.getEntry("ctrlEffort")
+
+    def goto(self, angle):
+        """Commands the arm to go to a specific angle."""
+        self.isActive = True
+        self.pPIDController.setGoal(constants.convert.rad2rev(angle))
+        self.hasSetNewGoal = False
+
+    def stop(self):
+        """Stops the arm movement."""
+        self.isActive = False
+        self.arm.stopMotor()
+
+    def calcGravityComp(self, armPos):
+        """Calculates gravity compensation."""
+        return constants.armConsts.gravityGain * np.cos(armPos)
+
+    def updateHardware(self):
+        """Updates the hardware based on PID calculations."""
+        if not self.isActive:
+            return
+        
+        currentPos = self.getArmPosition()
+        pidOutput = self.pPIDController.calculate(currentPos)
+        if not self.hasSetNewGoal and self.pPIDController.atGoal():
+            self.pPIDController.setGoal(currentPos)
+            self.hasSetNewGoal = True
+
+        feedforward = self.calcGravityComp(currentPos)
+        controlEffort = pidOutput + feedforward
+        controlEffort *= constants.armConsts.rotationSpeedScaler
+        self.arm.set(self.clipValue(controlEffort, 2.0, -2.0))
+
+        # Update NetworkTables
+        self.publishToNetworkTables(currentPos, controlEffort)
+
+    def getArmPosition(self):
+        """Calculates the average position of the arm."""
+        rightPosition = self.armRightEncoder.getAbsolutePosition() - constants.armConsts.rightEncoderOffset
+        leftPosition = self.armLeftEncoder.getAbsolutePosition() - constants.armConsts.leftEncoderOffset
+        return constants.convert.rev2rad((rightPosition + leftPosition) / 2)
+
+    def clipValue(self, value, upper, lower):
+        """Clips a value to be within specified bounds."""
+        return max(min(value, upper), lower)
+
+    def publishToNetworkTables(self, position, controlEffort):
+        """Publishes data to NetworkTables for monitoring."""
+        self.positionPublisher.setDouble(position)
+        self.controlEffortPublisher.setDouble(controlEffort)
+        self.setpointPublisher.setDouble(self.pPIDController.getGoal())
+
+
+
+
+
+
+
+
+
+'''import time
+import wpilib
 import wpilib.drive
 import commands2
 import rev
 import constants
 import numpy as Derek
+
+from ntcore import NetworkTableInstance
+from wpimath.controller import ProfiledPIDController
+from wpimath.trajectory import TrapezoidProfile
 
 from team254.SparkMaxFactory import SparkMaxFactory
 from team254.LazySparkMax import LazySparkMax
@@ -36,6 +153,28 @@ class ArmSubsystem(commands2.Subsystem):
         super().__init__()
         self.cache = self.Cache()
         self.lastUpdateTime = time.time()
+
+        # Network Tables setup
+        self.ntinst = NetworkTableInstance.getDefault()
+
+        # Assuming a NetworkTables structure like "/subsystems/arm/"
+        self.armTable = self.ntinst.getTable("subsystems/arm")
+        
+        # Publishers for various data points
+        self.positionPublisher = self.armTable.getEntry("position")
+        self.setpointPublisher = self.armTable.getEntry("setpoint")
+        # self.leftControlEffortPublisher = self.armTable.getEntry("leftCtrlEffort")
+        # self.rightControlEffortPublisher = self.armTable.getEntry("righttCtrlEffort")
+        self.controlEffortPublisher = self.armTable.getEntry("ctrlEffort")
+        self.errorPublisher = self.armTable.getEntry("error")
+        self.statusPublisher = self.armTable.getEntry("status")
+        self.positionDataEntry = self.armTable.getEntry("plotData")
+        
+        # Example: subscribing to a topic for external setpoint control
+        # This could be updated to use a more specific callback method.
+        # self.externalSetpointSubscriber = self.armTable.getEntry("externalSetpoint")
+        # self.externalSetpointSubscriber.addListener(self.onExternalSetpointUpdate, NetworkTableInstance.NotifyFlags.UPDATE)
+    
 
         self.holdingAtTop = False  # Add a flag to indicate when holding position at top
 
@@ -70,9 +209,24 @@ class ArmSubsystem(commands2.Subsystem):
         # self.armRightPIDController.setSmartMotionMaxAccel(constants.armConsts.maxAcc, constants.armConsts.slotID)
         # self.armLeftPIDController.setSmartMotionMaxAccel(constants.armConsts.maxAcc, constants.armConsts.slotID)
 
-        self.armLeftSPIDController = SimplePIDController(constants.armConsts.armPIDValues)
-        self.armRightSPIDController = SimplePIDController(constants.armConsts.armPIDValues)
+        # Custom PID Controller
+        # self.armLeftSPIDController = SimplePIDController(constants.armConsts.armPIDValues)
+        # self.armRightSPIDController = SimplePIDController(constants.armConsts.armPIDValues)
+        # self.armPIDController = SimplePIDController(constants.armConsts.armPIDValues)
 
+        # WPILib Profiled PID Controller
+        self.pPIDController = ProfiledPIDController(
+            Kp=constants.armConsts.armPIDValues.P,
+            Ki=constants.armConsts.armPIDValues.I,
+            Kd=constants.armConsts.armPIDValues.D,
+            TrapezoidProfile.Constraints(
+                maxVelocity=constants.armConsts.maxVelocity,
+                maxAcceleration=constants.armConsts.maxAcc
+            )
+        )
+        self.pPIDController.reset()
+        self.pPIDController.setTolerance(constants.armConsts.PIDTolerance)
+        self.hasSetNewGoal = False
 
         self.armRight.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
         self.armLeft.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
@@ -95,7 +249,7 @@ class ArmSubsystem(commands2.Subsystem):
         # self.armLeftEncoderRelative.setReverseDirection(True)
 
         # !!!!!!!!!!!!!!!!!!!!
-        # THIS APPARENTLY DOESN'T WORK
+        # THIS APPARENTLY DOESN'T WORK THE WAY THAT YOU WOULD THINK
         # self.armRightEncoder.setPositionOffset(constants.armConsts.rightEncoderOffset)
         # self.armLeftEncoder.setPositionOffset(constants.armConsts.leftEncoderOffset)
         # !!!!!!!!!!!!!!!!!!!!
@@ -111,6 +265,11 @@ class ArmSubsystem(commands2.Subsystem):
 
         self.isActive = False
 
+    # def onExternalSetpointUpdate(self, entry, key, value, param):
+    #     # Convert the received value to radians or appropriate units before calling
+    #     newSetpointRadians = ... # Conversion logic here
+    #     self.goto(newSetpointRadians)
+
     def clipValue(self, value, upperBound, lowerBound):
         assert upperBound > lowerBound
         if value > upperBound:
@@ -124,8 +283,20 @@ class ArmSubsystem(commands2.Subsystem):
         self.isActive = True
         # self.armTargetAngle = angle
         self.cache.setpoint = constants.convert.rad2rev(angle)
-        self.armLeftSPIDController.reset()
-        self.armRightSPIDController.reset()
+        # self.armLeftSPIDController.reset()
+        # self.armRightSPIDController.reset()
+        self.hasSetNewGoal = False  # Allow new goal to be set
+
+        # Calculate the arbitrary feedforward term based on the current position
+        feedforward = self.calcGravityComp(self.getArmPosition())
+
+        # Update the setpoint for both PID controllers with feedforward
+        # self.armRightSPIDController.set_setpoint(self.cache.setpoint, feedforward)
+        # self.armLeftSPIDController.set_setpoint(self.cache.setpoint, feedforward)
+        # self.armPIDController.set_setpoint(self.cache.setpoint, self.calcGravityComp(angle))
+        self.pPIDController.setGoal(angle)
+
+
         print(f"ArmSubsystem.goto({angle}) -- self.cache.setpoint = {self.cache.setpoint}")
         
 
@@ -154,21 +325,61 @@ class ArmSubsystem(commands2.Subsystem):
         # self.armLeftPIDController.setReference(currentPos, rev.CANSparkLowLevel.ControlType.kPosition, 0, gravity_compensation)
 
     def calcGravityComp(self, armPos):
-
         return constants.armConsts.gravityGain * Derek.cos(armPos)
 
+    def updateHardware(self):
+        if self.isActive:
+            currentPosAverage = self.getArmPosition()
+
+            # Publish current position to Network Tables for debugging
+            self.positionPublisher.setDouble(currentPosAverage)
+            self.setpointPublisher.setDouble(self.cache.setpoint)
+
+            # Calculate feedforward based on the current position
+            feedforward = self.calcGravityComp(currentPosAverage)
+
+            # Calculate the PID controller output
+            pidOutput = self.pPIDController.calculate(currentPosAverage)
+
+            # Check if we've reached the goal and if we haven't already set the current position as the new goal
+            if self.pPIDController.atGoal() and not self.hasSetNewGoal:
+                self.pPIDController.setGoal(currentPosAverage)
+                self.hasSetNewGoal = True  # Mark that we've adjusted the goal
+            elif not self.pPIDController.atGoal():
+                self.hasSetNewGoal = False  # Reset the flag if we're moving towards a new goal
+
+            # Add feedforward to the PID output
+            controlEffort = pidOutput + feedforward
+
+            # Scale the control effort if necessary
+            controlEffort *= constants.armConsts.rotationSpeedScaler
+
+            # Publish control effort for debugging
+            self.controlEffortPublisher.setDouble(controlEffort)
+
+            # Apply the control effort to the motor controller group
+            self.arm.set(self.clipValue(controlEffort, 2.0, -2.0))
+'''
+
+    '''
     def updateHardware(self):
         # print("armSubsystem.updateHardware()")
         if self.isActive:
             # print("armSubsystem.updateHardware() - self.isActive = True")
-            print(f"armSubsystem.updateHardware() - getArmPosition()={self.getArmPosition()}")
-            now = time.time()
-            dt = now - self.lastUpdateTime
-            self.lastUpdateTime = now
+            # print(f"armSubsystem.updateHardware() - getArmPosition()={self.getArmPosition()}")
+            # now = time.time()
+            # dt = now - self.lastUpdateTime
+            # self.lastUpdateTime = now
 
-            currentPosRight = self.getArmRightPosition()
-            currentPosLeft = self.getArmLeftPosition()
-            currentPosAverage = (currentPosRight + currentPosLeft) / 2  # Average position of both sides
+            # currentPosRight = self.getArmRightPosition()
+            # currentPosLeft = self.getArmLeftPosition()
+            # currentPosAverage = (currentPosRight + currentPosLeft) / 2  # Average position of both sides
+            currentPosAverage = self.getArmPosition()
+
+            # Network tables publishers
+            self.positionPublisher.setDouble(currentPosAverage)
+            self.setpointPublisher.setDouble(self.cache.setpoint)
+
 
             # Calculate the arbitrary feedforward term based on the current position
             feedforward = self.calcGravityComp(currentPosAverage)
@@ -189,20 +400,43 @@ class ArmSubsystem(commands2.Subsystem):
             # else:
             #     self.holdingAtTop = False
 
-            # Update the setpoint for both PID controllers with feedforward
-            self.armRightSPIDController.set_setpoint(self.cache.setpoint, feedforward)
-            self.armLeftSPIDController.set_setpoint(self.cache.setpoint, feedforward)
+            
 
             # Calculate the control effort
-            controlEffortRight = self.armRightSPIDController.update(currentPosRight, dt, feedforward)
-            controlEffortLeft = self.armLeftSPIDController.update(currentPosLeft, dt, feedforward)
+            # controlEffortRight = self.armRightSPIDController.update(currentPosRight, dt, feedforward)
+            # controlEffortLeft = self.armLeftSPIDController.update(currentPosLeft, dt, feedforward)
+            # controlEffort = self.armPIDController.update(currentPosAverage, dt, feedforward)
+            pidOutput = self.pPIDController.calculate(currentPosAverage)
+
+            # Are we at our goal?
+            if self.pPIDController.atGoal():
+                self.pPIDController.setGoal(currentPosAverage)
+
+            # Feed forward
+            controlEffort = pidOutput + feedforward
+
+            # Apply scaler
+            # controlEffortRight *= constants.armConsts.rotationSpeedScaler
+            # controlEffortLeft *= constants.armConsts.rotationSpeedScaler
+            controlEffort *= constants.armConsts.rotationSpeedScaler
+
+            # NT Data
+            # self.rightControlEffortPublisher.setDouble(controlEffortRight)
+            # self.leftControlEffortPublisher.setDouble(controlEffortLeft)
+            self.controlEffortPublisher.setDouble(controlEffort)
+            self.positionPublisher.setDouble(currentPosAverage)
+            self.setpointPublisher.setDouble(self.cache.setpoint)
+            self.positionDataEntry.setDouble(currentPosAverage)
 
             # Apply the control effort to the motors
-            self.armRight.set(self.clipValue(controlEffortRight, 2.0, -2.0))
-            self.armLeft.set(self.clipValue(controlEffortLeft, 2.0, -2.0))
+            # self.armRight.set(self.clipValue(controlEffortRight, 2.0, -2.0))
+            # self.armLeft.set(self.clipValue(controlEffortLeft, 2.0, -2.0))
+            self.arm.set(self.clipValue(controlEffort, 2.0, -2.0))
 
-            print(f"armSubsystem().updateHardware() - controlEffortRight/Left={controlEffortRight}, {controlEffortLeft}")
+            
 
+            # print(f"armSubsystem().updateHardware() - controlEffortRight/Left={controlEffortRight}, {controlEffortLeft}")
+        '''
         '''
         print(f"armSubsystem.updateHardware() - getArmPosition()={self.getArmPosition()}")
         if self.isActive:
@@ -283,11 +517,12 @@ class ArmSubsystem(commands2.Subsystem):
     #         self.controlVoltage = ArmSubsystem.clipValue(self.controlVoltage, 2.0, -2.0)
     #         # print(self.controlVoltage)
     #         self.arm.setVoltage(self.controlVoltage)
-
+'''
     def cacheSensors(self):
         self.cache.leftCurrentAmp = self.armLeft.getOutputCurrent()
         self.cache.rightCurrentAmp = self.armRight.getOutputCurrent()
-        # Negate left encoder value because it goes in the opposite direction
+        # Subgract the respective encoder offsets
+        # Negate left encoder value because it goes in the opposite direction and returns a negative value
         self.cache.leftEncoderValue = -1.0 * (self.armLeftEncoder.getAbsolutePosition() - constants.armConsts.leftEncoderOffset)
         self.cache.rightEncoderValue = self.armRightEncoder.getAbsolutePosition() - constants.armConsts.rightEncoderOffset
         self.cache.leftPositionOffset = self.armLeftEncoder.getPositionOffset()
@@ -296,8 +531,8 @@ class ArmSubsystem(commands2.Subsystem):
         # self.cache.rightRelativeEncoderValue = self.armRightEncoderRelative.get()
         self.cache.bottomSensorValue = self.bottomLimit.get()
         self.cache.topSensorValue = self.topLimit.get()
-        print(f"lEV: {self.cache.leftEncoderValue}, rEV: {self.cache.rightEncoderValue}")
-        print(f"getArmPosition(): {self.getArmPosition()}")
+        # print(f"lEV: {self.cache.leftEncoderValue}, rEV: {self.cache.rightEncoderValue}")
+        # print(f"getArmPosition(): {self.getArmPosition()}")
 
     def getArmRightPosition(self):
         # return self.armRightEncoder.getAbsolutePosition() - self.armRightEncoder.getPositionOffset()
@@ -338,7 +573,7 @@ class ArmSubsystem(commands2.Subsystem):
     
     
 
-
+'''
     '''
     def __str__(self):
         """To string for robot's arm"""
