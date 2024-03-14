@@ -28,6 +28,7 @@ class MyRobot(commands2.TimedCommandRobot):
         self.container = RobotContainer()
 
     def robotPeriodic(self):
+        self.container.arm.updateArmPosition()
         commands2.CommandScheduler.getInstance().run()
     
     def autonomousInit(self):
@@ -43,7 +44,7 @@ class MyRobot(commands2.TimedCommandRobot):
         pass
 
     def disabledInit(self):
-        self.container.arm.isActive = False
+        # self.container.arm.goto(constants.shootingConsts.safePosition)
         print("**DISABLED!**")
 
     def disabledPeriodic(self):

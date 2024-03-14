@@ -34,9 +34,6 @@ class RobotContainer:
         self.configureButtonBindings()
         
         self.scale_factor = 1
-
-        print(self.shootNoteObject)
-
         self.robotDrive.setDefaultCommand(
             commands2.cmd.run(
                 lambda: self.robotDrive.robotDrive.arcadeDrive(
@@ -48,10 +45,6 @@ class RobotContainer:
                     )
                 ),
                 self.robotDrive
-            ).alongWith(
-                commands2.cmd.run(
-                    lambda: self.arm.updateArmPosition()
-                )
             )
             # .alongWith(
             #     commands2.cmd.run(
@@ -76,23 +69,26 @@ class RobotContainer:
 
         self.driverControler.a().whileTrue(
             commands2.cmd.run(
-                lambda: self.arm.goto(0.8)
-            )
-        ).whileFalse(
-            commands2.cmd.run(
-                lambda: self.arm.goto(0.0)
+                lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
             )
         )
 
-        self.driverControler.x().whileTrue(
+        self.driverControler.b().whileTrue(
+            commands2.cmd.run(
+                lambda: self.arm.goto(constants.shootingConsts.ampPositon)
+            )
+        )
+
+        self.driverControler.y().whileTrue(
+            commands2.cmd.run(
+                lambda: self.arm.goto(constants.armConsts.intakeAngle)
+            )
+        )
+        self.driverControler.x().onTrue(
             commands2.cmd.SequentialCommandGroup(
                 self.pickupObject,
                 self.detectNoteObject,
                 self.backupObject
-            )
-        ).negate().whileTrue(
-            commands2.cmd.run(
-                lambda: self.arm.intake.set(0)
             )
         )
         # self.driverControler.y().whileTrue(

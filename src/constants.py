@@ -21,7 +21,7 @@ class armConsts:
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
-    gravityGain = 1
+    gravityGain = 0.75
     countsPerRev = 2048
     motorToArmGearRatio = 82.5 # to 1
     intakeAngle = 0.0 # radians
@@ -29,11 +29,14 @@ class armConsts:
     ampAngle = 1.5 # radians
     dampingConstant = 1
     intakeSpeed = 0.8
+    gravityDeadband = 0.1
 
 class shootingConsts:
     speakerPosition = 0.245
     ampPositon = 1.88
+    startingPosition = 1.5
+    safePosition = 0
     shootingSpeedTop = 1
     shootingSpeedBottom = 1
-    backupTime = 0.5
+    backupTime = 0.1
     backupSpeed = -0.5

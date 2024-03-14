@@ -26,8 +26,8 @@ class ArmSubsystem(commands2.Subsystem):
         # self.bottomShooter.setInverted(True)
         self.intake = rev.CANSparkMax(9, rev.CANSparkMax.MotorType.kBrushless)
 
-        self.armRight.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
-        self.armLeft.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
+        self.armRight.IdleMode(rev.CANSparkBase.IdleMode.kBrake)
+        self.armLeft.IdleMode(rev.CANSparkBase.IdleMode.kBrake)
         self.topShooter.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
         self.bottomShooter.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
         self.intake.IdleMode(rev.CANSparkBase.IdleMode.kBrake)
@@ -46,8 +46,10 @@ class ArmSubsystem(commands2.Subsystem):
         self.armLeftEncoderRelative = wpilib.Encoder(7,8)
         self.armLeftEncoderRelative.setReverseDirection(True)
 
-        self.armRightEncoder.setPositionOffset(0.42430531060763277)
-        self.armLeftEncoder.setPositionOffset(0.5910043147751078)
+        # self.armRightEncoder.setPositionOffset(0.42430531060763277)
+        # self.armLeftEncoder.setPositionOffset(0.5910043147751078)
+        self.armRightEncoder.setPositionOffset(0.42430531060763277 - 0.12)
+        self.armLeftEncoder.setPositionOffset(0.5910043147751078 - 0.12)
 
         # Photo Sensor to detect if a note is loaded
         self.noteSensor = wpilib.DigitalInput(2) # change channel later
@@ -57,7 +59,7 @@ class ArmSubsystem(commands2.Subsystem):
         self.bottomLimit = wpilib.DigitalInput(1) # change channel later
         self.topLimit = wpilib.DigitalInput(9)
 
-        self.armTargetAngle = 0.0
+        self.armTargetAngle = constants.shootingConsts.startingPosition
         self.controlVoltage = 0.0
 
         self.isActive = False
@@ -100,10 +102,12 @@ class ArmSubsystem(commands2.Subsystem):
             and we can play with the I gain to increase the precision of the final angle.
             
             """
-            print(f"armLeftEncoder: {self.armLeftEncoder.getAbsolutePosition()}, armRightEncoder: {self.armRightEncoder.getAbsolutePosition()}")
-            print(f"delta: {delta}")
+
             P_voltage = delta * constants.armConsts.rotationSpeedScaler
-            gravity_feedforward_voltage = constants.armConsts.gravityGain * Derek.cos(self.getArmPosition())
+
+            #                                                                   if target angle is less than deadband, set gravity to 0 because arm hovers over position when position is set to 0
+            gravity_feedforward_voltage = constants.armConsts.gravityGain * Derek.cos(self.getArmPosition()) * ((self.armTargetAngle > constants.armConsts.gravityDeadband) or (self.getArmPosition() > constants.armConsts.gravityDeadband))
+            print(f"AP: {self.getArmPosition()}, D: {delta}, G: {gravity_feedforward_voltage}")
             # self.armLeftPIDController.setP(constants.armConsts.rotationSpeedScaler)
             # self.armLeftPIDController.setI(0)
             # self.armLeftPIDController.setD(0)
@@ -112,8 +116,8 @@ class ArmSubsystem(commands2.Subsystem):
             # self.armRightPIDController.setD(0)
 
             self.controlVoltage = P_voltage + gravity_feedforward_voltage
-            print(f"P_voltage: {P_voltage} - controlVoltage: {self.controlVoltage}")
-            print(f"getArmPosition(): {self.getArmPosition()}")
+            # print(f"P_voltage: {P_voltage} - controlVoltage: {self.controlVoltage}")
+            # print(f"getArmPosition(): {self.getArmPosition()}")
             
             #limit voltage if it's at the limit switch
             if self.bottomLimit.get() and self.controlVoltage < 0.0:
