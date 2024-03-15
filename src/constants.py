@@ -37,6 +37,13 @@ class driveConsts:
     wheelDiameter = convert.in2m(6)
     driveMaxOutput = 0.8 
     slowDriveScale = 0.5
+    gearboxRatio = 10.75 # 10.75:1
+    driveRotationPIDValues = PID(  # TODO: Tune this
+        0.05, # P    
+        0.0, # I
+        0.0 # D
+    )
+    driveRotationAcceptableError = 2
 
 class armConsts:
     rotationSpeedScaler = 1.0

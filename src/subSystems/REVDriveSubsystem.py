@@ -3,6 +3,7 @@ import wpilib.drive
 import commands2
 import rev
 import navx
+import math
 import constants
 
 from team254.SparkMaxFactory import SparkMaxFactory
@@ -32,8 +33,8 @@ class DriveSubsystem(commands2.Subsystem):
         self.isSlowMode = False
         self.isReverseMode = False
 
-        #self.gyroAccl = navx.AHRS(wpilib.SPI.Port.kMXP)
-        # TODO: initialize gyro here
+        self.gyroAccl = navx.AHRS(wpilib.SPI.Port.kMXP)
+        
         
         # self.leftFront = rev.CANSparkMax(constants.CANIDs.leftDriveSparkFront, rev.CANSparkMax.MotorType.kBrushless)
         # self.leftBack = rev.CANSparkMax(constants.CANIDs.leftDriveSparkBack, rev.CANSparkMax.MotorType.kBrushless)
@@ -60,10 +61,21 @@ class DriveSubsystem(commands2.Subsystem):
         )
         self.rightDrive.setInverted(True)
 
+        # Set up encoders
         self.leftFrontEncoder = self.leftFront.getEncoder()
         self.leftBackEncoder = self.leftBack.getEncoder()
         self.rightFrontEncoder = self.rightFront.getEncoder()
-        self.rigthBackEncoder = self.rightBack.getEncoder()
+        self.rightBackEncoder = self.rightBack.getEncoder()
+
+        wheelCircumferenceMeters = math.pi * constants.driveConsts.wheelDiameter
+        gearboxRatio = constants.driveConsts.gearboxRatio
+        positionConversionFactor = wheelCircumferenceMeters / gearboxRatio
+
+        # Set the conversion factor for both left and right encoders
+        self.leftFrontEncoder.setPositionConversionFactor(positionConversionFactor)
+        self.leftBackEncoder.setPositionConversionFactor(positionConversionFactor)
+        self.rightFrontEncoder.setPositionConversionFactor(positionConversionFactor)
+        self.rightBackEncoder.setPositionConversionFactor(positionConversionFactor)
 
 
     def toggleSlowMode(self):
@@ -101,6 +113,88 @@ class DriveSubsystem(commands2.Subsystem):
     def updateHardware(self):
         self.robotDrive.arcadeDrive(self.cache.forwardSetpoint, self.cache.rotationSetpoint)
 
+    def getLeftEncoderDistance(self):
+        """
+        Calculate the distance traveled based on the encoder counts from the left side of the drive.
+        Takes into account the gearbox ratio to convert motor rotations to wheel rotations, and then
+        converts those rotations to linear distance traveled.
+        """
+        wheelDiameter = constants.driveConsts.wheelDiameter
+        wheelCircumference = math.pi * wheelDiameter
+        gearboxRatio = constants.driveConsts.gearboxRatio
+
+        # Get the encoder positions in terms of motor rotations
+        leftFrontMotorRotations = self.leftFrontEncoder.getPosition()
+        leftBackMotorRotations = self.leftBackEncoder.getPosition()
+
+        # Convert motor rotations to wheel rotations by dividing by the gearbox ratio
+        leftFrontWheelRotations = leftFrontMotorRotations / gearboxRatio
+        leftBackWheelRotations = leftBackMotorRotations / gearboxRatio
+
+        # Convert wheel rotations to linear distance
+        leftFrontDistance = leftFrontWheelRotations * wheelCircumference
+        leftBackDistance = leftBackWheelRotations * wheelCircumference
+
+        # Average the distances from the front and back encoders for a more representative value
+        averageLeftDistance = (leftFrontDistance + leftBackDistance) / 2
+
+        return averageLeftDistance
+
+    def getRightEncoderDistance(self):
+        """
+        Calculate the distance traveled based on the encoder counts from the right side of the drive.
+        Takes into account the gearbox ratio to convert motor rotations to wheel rotations, and then
+        converts those rotations to linear distance traveled.
+        """
+        wheelDiameter = constants.driveConsts.wheelDiameter
+        wheelCircumference = math.pi * wheelDiameter
+        gearboxRatio = constants.driveConsts.gearboxRatio
+
+        # Get the encoder positions in terms of motor rotations
+        rightFrontMotorRotations = self.rightFrontEncoder.getPosition()
+        rightBackMotorRotations = self.rightBackEncoder.getPosition()  # Note: Check the spelling in your original code
+
+        # Convert motor rotations to wheel rotations by dividing by the gearbox ratio
+        rightFrontWheelRotations = rightFrontMotorRotations / gearboxRatio
+        rightBackWheelRotations = rightBackMotorRotations / gearboxRatio
+
+        # Convert wheel rotations to linear distance
+        rightFrontDistance = rightFrontWheelRotations * wheelCircumference
+        rightBackDistance = rightBackWheelRotations * wheelCircumference
+
+        # Average the distances from the front and back encoders for a more representative value
+        averageRightDistance = (rightFrontDistance + rightBackDistance) / 2
+
+        return averageRightDistance
+
+    def getAverageDistance(self):
+        """
+        Calculate the average distance traveled by both the left and right sides of the drive.
+        This gives a general idea of how far the robot has moved forward.
+        """
+        averageLeftDistance = self.getLeftEncoderDistance()
+        averageRightDistance = self.getRightEncoderDistance()
+
+        return (averageLeftDistance + averageRightDistance) / 2
+
+    def getDrift(self):
+        """
+        Calculate the difference in distance between the left and right sides of the drive.
+        A non-zero value indicates the robot is drifting to one side, which could be used
+        to correct its path if necessary.
+        """
+        averageLeftDistance = self.getLeftEncoderDistance()
+        averageRightDistance = self.getRightEncoderDistance()
+
+        return averageRightDistance - averageLeftDistance
+
+
+    def resetGyro(self):
+        """
+        Resets the gyro's yaw angle to zero. This makes the robot's current direction as the "forward" direction.
+        """
+        self.gyroAccl.zeroYaw()
+
     def cacheSensors(self):
         # self.cache.gyroAngle = self.gyroAccl.getAngle()
         self.cache.leftFrontCurrentAmp = self.leftFront.getOutputCurrent()
@@ -110,4 +204,4 @@ class DriveSubsystem(commands2.Subsystem):
         self.cache.leftFrontEncoderValue = self.leftFrontEncoder.getVelocity()
         self.cache.leftBackEncoderValue = self.leftBackEncoder.getVelocity()
         self.cache.rightFrontEncoderValue = self.rightFrontEncoder.getVelocity()
-        self.cache.rightBackEncoderValue = self.rigthBackEncoder.getVelocity()
+        self.cache.rightBackEncoderValue = self.rightBackEncoder.getVelocity()
