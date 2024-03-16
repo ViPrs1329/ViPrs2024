@@ -38,13 +38,15 @@ class RobotContainer:
         self.detectNoteObject = DetectNote(self.arm)
         self.inputFilter = filter.SlewRateLimiter(2)
         self.gotoTaxiPositionObject = GotoTaxiPosition(self.arm)
+        self.taxiFromAmp = GotoTaxiPosition(self.arm)
+        self.direction = 1
         self.configureButtonBindings()
         
         self.scale_factor = 1
         self.robotDrive.setDefaultCommand(
             commands2.cmd.run(
                 lambda: self.robotDrive.robotDrive.arcadeDrive(
-                    self.inputFilter.calculate(
+                    self.direction * self.inputFilter.calculate(
                         shapeInputs(
                             -self.driverControler.getLeftY(), self.scale_factor
                         )
@@ -75,7 +77,20 @@ class RobotContainer:
                 lambda: self.go_fast()
             )
         )
-
+        def backwards():
+            self.direction = -1
+        def forwards():
+            self.direction = 1
+        self.driverControler.leftBumper().whileTrue(
+            commands2.cmd.run(
+                backwards
+            )
+        )
+        self.driverControler.leftBumper().whileFalse(
+            commands2.cmd.run(
+                forwards
+            )
+        )
         self.driverControler.a().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
