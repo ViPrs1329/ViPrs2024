@@ -2,6 +2,7 @@ import commands2
 import commands2.button
 import commands2.cmd
 import numpy as DrArnett
+from wpimath import filter
 
 from subSystems.REVDriveSubsystem import DriveSubsystem
 from subSystems.armSubsystem import ArmSubsystem
@@ -10,6 +11,7 @@ from commands.stopShooter import StopShooter
 from commands.retractNote import Backup
 from commands.pickupNote import PickupNote
 from commands.detectNote import DetectNote
+from commands.gotoTaxiPosition import GotoTaxiPosition
 
 import constants
 
@@ -28,17 +30,24 @@ class RobotContainer:
         self.arm = ArmSubsystem()
         self.shootNoteObject = ShootNote(self.arm)
         self.stopShooterObject = StopShooter(self.arm)
+
+        self.shootNoteObjectSlow = ShootNote(self.arm)
+        self.stopShooterObjectSlow = StopShooter(self.arm)
         self.backupObject = Backup(self.arm)
         self.pickupObject = PickupNote(self.arm)
         self.detectNoteObject = DetectNote(self.arm)
+        self.inputFilter = filter.SlewRateLimiter(2)
+        self.gotoTaxiPositionObject = GotoTaxiPosition(self.arm)
         self.configureButtonBindings()
         
         self.scale_factor = 1
         self.robotDrive.setDefaultCommand(
             commands2.cmd.run(
                 lambda: self.robotDrive.robotDrive.arcadeDrive(
-                    shapeInputs(
-                        -self.driverControler.getLeftY(), self.scale_factor
+                    self.inputFilter.calculate(
+                        shapeInputs(
+                            -self.driverControler.getLeftY(), self.scale_factor
+                        )
                     ),
                     shapeInputs(
                         -self.driverControler.getRightX(), self.scale_factor
@@ -88,9 +97,21 @@ class RobotContainer:
             commands2.cmd.SequentialCommandGroup(
                 self.pickupObject,
                 self.detectNoteObject,
-                self.backupObject
+                self.backupObject,
+                self.gotoTaxiPositionObject
             )
         )
+
+        self.driverControler.x().whileTrue(
+            commands2.cmd.run(
+                lambda: self.arm.goto(constants.armConsts.intakeAngle)
+            )
+        )
+        # self.driverControler.x().negate().whileTrue(
+        #     commands2.cmd.run(
+        #         lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
+        #     )
+        # )
         # self.driverControler.y().whileTrue(
         #     commands2.cmd.run(
         #         lambda: self.arm.intakeOVeride()
@@ -106,10 +127,18 @@ class RobotContainer:
             
         def spinUpShooters():
             self.arm.spinUpShooters()
+        
+        def spinUpShootersSlow():
+            self.arm.spinUpShootersSlow()
 
+        # shooot into the speaker
         self.driverControler.rightTrigger().whileTrue(
             commands2.cmd.run(
                 spinUpShooters
+            ).alongWith(
+                commands2.cmd.run(
+                    lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
+                )
             )
             # commands2.cmd.SequentialCommandGroup(
             #     commands2.cmd.run(lambda: self.arm.spinUpShooters()),
@@ -124,6 +153,30 @@ class RobotContainer:
                 self.shootNoteObject,
                 commands2.cmd.waitSeconds(1),
                 self.stopShooterObject
+            )
+        )
+
+        self.driverControler.leftTrigger().whileTrue(
+            commands2.cmd.run(
+                spinUpShootersSlow
+            ).alongWith(
+                commands2.cmd.run(
+                    lambda: self.arm.goto(constants.shootingConsts.ampPositon)
+                )
+            )
+            # commands2.cmd.SequentialCommandGroup(
+            #     commands2.cmd.run(lambda: self.arm.spinUpShooters()),
+            #     commands2.cmd.waitSeconds(1),
+            #     commands2.cmd.run(lambda: self.arm.shoot()),
+            #     commands2.cmd.waitSeconds(1),
+            #     commands2.cmd.run(lambda: self.arm.disableShooter())
+            # )
+        )
+        self.driverControler.leftTrigger().negate().whileTrue(
+            commands2.cmd.SequentialCommandGroup(
+                self.shootNoteObjectSlow,
+                commands2.cmd.waitSeconds(1),
+                self.stopShooterObjectSlow
             )
         )
         # .whileFalse(

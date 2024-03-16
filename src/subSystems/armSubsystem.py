@@ -48,8 +48,8 @@ class ArmSubsystem(commands2.Subsystem):
 
         # self.armRightEncoder.setPositionOffset(0.42430531060763277)
         # self.armLeftEncoder.setPositionOffset(0.5910043147751078)
-        self.armRightEncoder.setPositionOffset(0.42430531060763277 - 0.12)
-        self.armLeftEncoder.setPositionOffset(0.5910043147751078 - 0.12)
+        self.armRightEncoder.setPositionOffset(0.42430531060763277)
+        self.armLeftEncoder.setPositionOffset(0.5910043147751078)
 
         # Photo Sensor to detect if a note is loaded
         self.noteSensor = wpilib.DigitalInput(2) # change channel later
@@ -132,6 +132,10 @@ class ArmSubsystem(commands2.Subsystem):
     def spinUpShooters(self):
         self.topShooter.set(constants.shootingConsts.shootingSpeedTop)
         self.bottomShooter.set(constants.shootingConsts.shootingSpeedBottom)
+
+    def spinUpShootersSlow(self):
+        self.topShooter.set(constants.shootingConsts.shootingSpeedTop / 2)
+        self.bottomShooter.set(constants.shootingConsts.shootingSpeedBottom / 2)
 
     def shoot(self):
         self.intake.set(1)

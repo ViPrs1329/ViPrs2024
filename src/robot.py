@@ -45,6 +45,7 @@ class MyRobot(commands2.TimedCommandRobot):
 
     def disabledInit(self):
         # self.container.arm.goto(constants.shootingConsts.safePosition)
+        commands2.CommandScheduler.getInstance().cancelAll()
         print("**DISABLED!**")
 
     def disabledPeriodic(self):
@@ -72,3 +73,6 @@ class MyRobot(commands2.TimedCommandRobot):
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
+
+
+
