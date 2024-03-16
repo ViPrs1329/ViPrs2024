@@ -34,7 +34,8 @@ class convert:
         return count / armConsts.countsPerRev
     
 class driveConsts:
-    wheelDiameter = convert.in2m(6)
+    wheelDiameterMetric = convert.in2m(6)
+    wheelDiameter = 6
     driveMaxOutput = 0.8 
     slowDriveScale = 0.5
     gearboxRatio = 10.75 # 10.75:1
@@ -101,6 +102,7 @@ class sensorConsts:
     noteSensorDIO = 2
     armBottomLimit = 1
     armTopLimit = 9
+    REVNeoEncoderCountsPerRev = 42
 
 class States(Enum):
         # Define general states that might apply to various subsystems or the robot in general

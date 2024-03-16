@@ -67,15 +67,18 @@ class DriveSubsystem(commands2.Subsystem):
         self.rightFrontEncoder = self.rightFront.getEncoder()
         self.rightBackEncoder = self.rightBack.getEncoder()
 
-        wheelCircumferenceMeters = math.pi * constants.driveConsts.wheelDiameter
+        # Calculate conversion factors for encoders
+        wheelCircumference = math.pi * constants.driveConsts.wheelDiameter
         gearboxRatio = constants.driveConsts.gearboxRatio
-        positionConversionFactor = wheelCircumferenceMeters / gearboxRatio
+        positionConversionFactor = wheelCircumference / gearboxRatio
 
         # Set the conversion factor for both left and right encoders
         self.leftFrontEncoder.setPositionConversionFactor(positionConversionFactor)
         self.leftBackEncoder.setPositionConversionFactor(positionConversionFactor)
         self.rightFrontEncoder.setPositionConversionFactor(positionConversionFactor)
         self.rightBackEncoder.setPositionConversionFactor(positionConversionFactor)
+
+        self.resetEncoders()
 
 
     def toggleSlowMode(self):
@@ -119,23 +122,27 @@ class DriveSubsystem(commands2.Subsystem):
         Takes into account the gearbox ratio to convert motor rotations to wheel rotations, and then
         converts those rotations to linear distance traveled.
         """
-        wheelDiameter = constants.driveConsts.wheelDiameter
-        wheelCircumference = math.pi * wheelDiameter
-        gearboxRatio = constants.driveConsts.gearboxRatio
+        # wheelDiameter = constants.driveConsts.wheelDiameter
+        # wheelCircumference = math.pi * wheelDiameter
+        # gearboxRatio = constants.driveConsts.gearboxRatio
 
         # Get the encoder positions in terms of motor rotations
-        leftFrontMotorRotations = self.leftFrontEncoder.getPosition()
-        leftBackMotorRotations = self.leftBackEncoder.getPosition()
+        # leftFrontMotorRotations = self.leftFrontEncoder.getPosition()
+        # leftBackMotorRotations = self.leftBackEncoder.getPosition()
+        # leftFrontMotorRotations = self.cache.leftFrontEncoderValue
+        # leftBackMotorRotations = self.cache.leftBackEncoderValue
 
         # Convert motor rotations to wheel rotations by dividing by the gearbox ratio
-        leftFrontWheelRotations = leftFrontMotorRotations / gearboxRatio
-        leftBackWheelRotations = leftBackMotorRotations / gearboxRatio
+        # leftFrontWheelRotations = leftFrontMotorRotations / gearboxRatio
+        # leftBackWheelRotations = leftBackMotorRotations / gearboxRatio
 
         # Convert wheel rotations to linear distance
-        leftFrontDistance = leftFrontWheelRotations * wheelCircumference
-        leftBackDistance = leftBackWheelRotations * wheelCircumference
+        # leftFrontDistance = leftFrontWheelRotations * wheelCircumference
+        # leftBackDistance = leftBackWheelRotations * wheelCircumference
 
         # Average the distances from the front and back encoders for a more representative value
+        leftFrontDistance = self.cache.leftFrontEncoderValue
+        leftBackDistance = self.cache.leftBackEncoderValue
         averageLeftDistance = (leftFrontDistance + leftBackDistance) / 2
 
         return averageLeftDistance
@@ -146,26 +153,30 @@ class DriveSubsystem(commands2.Subsystem):
         Takes into account the gearbox ratio to convert motor rotations to wheel rotations, and then
         converts those rotations to linear distance traveled.
         """
-        wheelDiameter = constants.driveConsts.wheelDiameter
-        wheelCircumference = math.pi * wheelDiameter
-        gearboxRatio = constants.driveConsts.gearboxRatio
+        # wheelDiameter = constants.driveConsts.wheelDiameter
+        # wheelCircumference = math.pi * wheelDiameter
+        # gearboxRatio = constants.driveConsts.gearboxRatio
 
         # Get the encoder positions in terms of motor rotations
-        rightFrontMotorRotations = self.rightFrontEncoder.getPosition()
-        rightBackMotorRotations = self.rightBackEncoder.getPosition()  # Note: Check the spelling in your original code
+        # rightFrontMotorRotations = self.rightFrontEncoder.getPosition()
+        # rightBackMotorRotations = self.rightBackEncoder.getPosition()  
+        # rightFrontMotorRotations = self.cache.rightFrontEncoderValue
+        # rightBackMotorRotations = self.cache.rightBackEncoderValue
 
         # Convert motor rotations to wheel rotations by dividing by the gearbox ratio
-        rightFrontWheelRotations = rightFrontMotorRotations / gearboxRatio
-        rightBackWheelRotations = rightBackMotorRotations / gearboxRatio
+        # rightFrontWheelRotations = rightFrontMotorRotations / gearboxRatio
+        # rightBackWheelRotations = rightBackMotorRotations / gearboxRatio
 
         # Convert wheel rotations to linear distance
-        rightFrontDistance = rightFrontWheelRotations * wheelCircumference
-        rightBackDistance = rightBackWheelRotations * wheelCircumference
+        # rightFrontDistance = rightFrontWheelRotations * wheelCircumference
+        # rightBackDistance = rightBackWheelRotations * wheelCircumference
 
         # Average the distances from the front and back encoders for a more representative value
+        rightFrontDistance = self.cache.rightFrontEncoderValue
+        rightBackDistance = self.cache.rightBackEncoderValue
         averageRightDistance = (rightFrontDistance + rightBackDistance) / 2
 
-        return averageRightDistance
+        return abs(averageRightDistance)
 
     def getAverageDistance(self):
         """
@@ -174,6 +185,8 @@ class DriveSubsystem(commands2.Subsystem):
         """
         averageLeftDistance = self.getLeftEncoderDistance()
         averageRightDistance = self.getRightEncoderDistance()
+
+        # print(f"DriveSubsystem.getAverageDistance() - aLD: {averageLeftDistance}, aRD: {averageRightDistance}")
 
         return (averageLeftDistance + averageRightDistance) / 2
 
@@ -195,13 +208,27 @@ class DriveSubsystem(commands2.Subsystem):
         """
         self.gyroAccl.zeroYaw()
 
+    def resetEncoders(self):
+        self.leftBackEncoder.setPosition(0)
+        self.leftFrontEncoder.setPosition(0)
+        self.rightBackEncoder.setPosition(0)
+        self.rightFrontEncoder.setPosition(0)
+
+    def getDriveRotation(self):
+        """
+        Returns the angle of the robot since the last reset
+        """
+        return self.cache.gyroAngle
+
     def cacheSensors(self):
-        # self.cache.gyroAngle = self.gyroAccl.getAngle()
+        self.cache.gyroAngle = self.gyroAccl.getAngle()
         self.cache.leftFrontCurrentAmp = self.leftFront.getOutputCurrent()
         self.cache.leftBackCurrentAmp = self.leftBack.getOutputCurrent()
         self.cache.rightFrontCurrentAmp = self.rightFront.getOutputCurrent()
         self.cache.rightBackCurrentAmp = self.rightBack.getOutputCurrent()
-        self.cache.leftFrontEncoderValue = self.leftFrontEncoder.getVelocity()
-        self.cache.leftBackEncoderValue = self.leftBackEncoder.getVelocity()
-        self.cache.rightFrontEncoderValue = self.rightFrontEncoder.getVelocity()
-        self.cache.rightBackEncoderValue = self.rightBackEncoder.getVelocity()
+        self.cache.leftFrontEncoderValue = self.leftFrontEncoder.getPosition()
+        self.cache.leftBackEncoderValue = self.leftBackEncoder.getPosition()
+        self.cache.rightFrontEncoderValue = self.rightFrontEncoder.getPosition()
+        self.cache.rightBackEncoderValue = self.rightBackEncoder.getPosition()
+        # print(f"DriveSubsystem.cacheSensors() - lFEV: {round(self.cache.leftFrontEncoderValue, 2)}, lBEV: {round(self.cache.leftBackEncoderValue, 2)}, rFEV: {round(self.cache.rightFrontEncoderValue, 2)}, rBEV: {round(self.cache.rightBackEncoderValue, 2)}")
+        

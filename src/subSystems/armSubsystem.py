@@ -252,7 +252,7 @@ class ArmSubsystem(commands2.Subsystem):
             controlEffortClipped = self.clipValue(scaledControlEffort, 2.0, -2.0)
             self.arm.set(controlEffortClipped)
 
-            print(f"armSubsystem.updateHardware() - sp: {self.cache.setpoint}, ff: {round(feedforward, 2)}, pO: {round(pidOutput, 4)}, cE: {round(controlEffort, 4)} sCE: {round(scaledControlEffort, 4)}, cP: {round(currentPosAverage, 4)}")
+            # print(f"armSubsystem.updateHardware() - sp: {self.cache.setpoint}, ff: {round(feedforward, 2)}, pO: {round(pidOutput, 4)}, cE: {round(controlEffort, 4)} sCE: {round(scaledControlEffort, 4)}, cP: {round(currentPosAverage, 4)}")
 
 
     '''

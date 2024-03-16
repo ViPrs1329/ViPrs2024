@@ -14,8 +14,8 @@ class ShooterStartCmd(commands2.Command):
         self.shooter.setShooterSpeed(constants.shooterConsts.topShootHighSpeed, constants.shooterConsts.bottomShootHighSpeed)
     
     def isFinished(self):
-        # This command continues until interrupted
-        return False
+        # Shooter is turned on. Let StopShooterCmd turn it off. I'm outta here
+        return True
 
     def end(self, interrupted):
         # Optionally, stop the shooter here if you want immediate response

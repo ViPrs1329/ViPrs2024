@@ -11,6 +11,7 @@ import wpilib.drive
 import rev
 import commands2
 from ntcore import NetworkTableInstance
+from commands2 import CommandScheduler
 from robotContainer import RobotContainer
 import constants
 from team1329.SimplePIDController import SimplePIDController
@@ -70,6 +71,7 @@ class MyRobot(commands2.TimedCommandRobot):
         self.container.arm.isActive = False
         # robotContainer.onDisable()
         print("**DISABLED!**")
+        CommandScheduler.getInstance().cancelAll()
 
     def disabledPeriodic(self):
         pass

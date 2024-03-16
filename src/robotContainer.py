@@ -23,6 +23,7 @@ from commands.arm.MoveArmCmds import MoveArmToIntakePosition, MoveArmToScoreHigh
 from commands.drive.arcadeDriveCmd import ArcadeDriveCmd
 from commands.drive.driveSlowCmd import ToggleSlowModeCmd
 from commands.drive.toggleReverseDriveCmd import ToggleReverseDriveCmd
+from commands.auto.AutoRoutine1Cmd import AutonomousRoutine
 
 # Import constants
 from constants import States, intakeConsts, inputConsts, driveConsts
@@ -108,7 +109,9 @@ class RobotContainer:
         self.driverController.x().onTrue(self.expelNoteCmd)
 
         # Button Y binding
-
+        self.driverController.y().onTrue(
+            AutonomousRoutine(self.robotDrive, self.arm, self.shooter, self.intake)
+        )
 
         # Right bumper binding
         # Move arm to speaker (high) scoring position

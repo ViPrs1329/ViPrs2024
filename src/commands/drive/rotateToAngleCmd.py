@@ -11,6 +11,7 @@ class RotateToAngle(Command):
         # self.kI = driveConsts.driveRotationPIDValues.I
         # self.kD = driveConsts.driveRotationPIDValues.D
         self.addRequirements(drive)
+        print(f"RotateToAngle.__init__(..., angle={angle})")
 
     def initialize(self):
         self.drive.resetGyro()  
@@ -26,6 +27,8 @@ class RotateToAngle(Command):
         # Use the rotation speed to rotate the robot
         self.drive.arcadeDriveSS(0.0, rotationSpeed)
 
+        print(f"RotateToAngle.execute() - cA: {round(currentAngle, 2)}, er: {round(error, 2)}, rS: {round(rotationSpeed, 2)}")
+
     def end(self, interrupted):
         self.drive.arcadeDriveSS(0.0, 0.0)
 
@@ -33,4 +36,6 @@ class RotateToAngle(Command):
         # Consider command finished when the robot is within a small error margin of the target angle
         currentAngle = self.drive.gyroAccl.getYaw()
         error = self.targetAngle - currentAngle
-        return abs(error) < driveConsts.driveRotationAcceptableError
+        fin = abs(error) < driveConsts.driveRotationAcceptableError
+        print(f"RotateToAngle.isFinished() - cA: {round(currentAngle, 2)}, er: {round(error, 2)}, fin???: {fin}")
+        return fin
