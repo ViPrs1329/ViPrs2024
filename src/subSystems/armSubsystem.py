@@ -62,7 +62,7 @@ class ArmSubsystem(commands2.Subsystem):
         self.armTargetAngle = constants.shootingConsts.startingPosition
         self.controlVoltage = 0.0
 
-        self.isActive = False
+        self.isActive = True
         self.pickupOveride = False
 
     def clipValue(value, upperBound, lowerBound):
@@ -107,7 +107,7 @@ class ArmSubsystem(commands2.Subsystem):
 
             #                                                                   if target angle is less than deadband, set gravity to 0 because arm hovers over position when position is set to 0
             gravity_feedforward_voltage = constants.armConsts.gravityGain * Derek.cos(self.getArmPosition()) * ((self.armTargetAngle > constants.armConsts.gravityDeadband) or (self.getArmPosition() > constants.armConsts.gravityDeadband))
-            print(f"AP: {self.getArmPosition()}, D: {delta}, G: {gravity_feedforward_voltage}")
+            # print(f"AP: {self.getArmPosition()}, D: {delta}, G: {gravity_feedforward_voltage}")
             # self.armLeftPIDController.setP(constants.armConsts.rotationSpeedScaler)
             # self.armLeftPIDController.setI(0)
             # self.armLeftPIDController.setD(0)

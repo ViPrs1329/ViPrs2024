@@ -40,3 +40,8 @@ class shootingConsts:
     shootingSpeedBottom = 1
     backupTime = 0.1
     backupSpeed = -0.5
+
+class autoConsts:
+    driveTime = 3
+    driveSpeed = 0.2
+    driveBackTime = 5

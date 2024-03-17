@@ -26,6 +26,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # result in both sides moving forward. Depending on how your robot's
         # gearbox is constructed, you might have to invert the left side instead.
         self.container = RobotContainer()
+        self.container.arm.activate()
 
     def robotPeriodic(self):
         self.container.arm.updateArmPosition()
@@ -34,9 +35,40 @@ class MyRobot(commands2.TimedCommandRobot):
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         # self.timer.restart()
-        self.autonomousCommand = self.container.getAutonomousCommand()
-        if self.autonomousCommand:
-            self.autonomousCommand.schedule()
+        
+        self.autonomousArmCommand = self.container.getAutonomousArmCommand()
+        self.autonomousArmCommand.schedule()
+        # if self.autonomousArmCommand:
+        #     self.autonomousArmCommand.schedule()
+
+        self.autoDrive = self.container.getAutoDriveCommand()
+        self.autoDrive.schedule()
+
+        # self.autoShooting = self.container.getAutoShootingCommand()
+        # self.autoShooting.schedule()
+
+        commands2.cmd.waitSeconds(2).schedule()
+
+        self.autoReverseDrive = self.container.getAutoReverseDriveCommand()
+        self.autoReverseDrive.schedule()
+
+        # self.autoEmptyDrive = self.container.getAutoEmptyDriveCommand()
+
+
+        # self.autonomousCommand = commands2.SequentialCommandGroup(
+        #     self.autonomousArmCommand,
+        #     self.autoDrive
+        #     # self.autoShooting,
+        #     # self.autoReverseDrive
+        #     # commands2.ParallelCommandGroup(
+        #     #     commands2.SequentialCommandGroup(
+        #     #         self.autoDrive,
+        #     #         self.autoShooting
+        #     #     ),
+        #     #     self.autoEmptyDrive
+        #     # ),
+        #     # self.autoReverseDrive  
+        # ).schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
@@ -55,6 +87,9 @@ class MyRobot(commands2.TimedCommandRobot):
         """This function is called once each time the robot enters teleoperated mode."""
         if self.autonomousCommand:
             self.autonomousCommand.cancel()
+
+        self.teleopDefaultCommand = self.container.setTeleopDefaultCommand()
+        self.teleopDefaultCommand.schedule()
         
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""

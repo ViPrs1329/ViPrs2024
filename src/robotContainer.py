@@ -12,6 +12,9 @@ from commands.retractNote import Backup
 from commands.pickupNote import PickupNote
 from commands.detectNote import DetectNote
 from commands.gotoTaxiPosition import GotoTaxiPosition
+from commands.autoDriveForward import autoDriveForward
+from commands.autoDriveBackwards import autoDriveBackwards
+from commands.emptyDriveCommand import emptyDriveCommand
 
 import constants
 
@@ -43,28 +46,42 @@ class RobotContainer:
         self.configureButtonBindings()
         
         self.scale_factor = 1
-        self.robotDrive.setDefaultCommand(
-            commands2.cmd.run(
-                lambda: self.robotDrive.robotDrive.arcadeDrive(
-                    self.direction * self.inputFilter.calculate(
-                        shapeInputs(
-                            -self.driverControler.getLeftY(), self.scale_factor
-                        )
-                    ),
+        # self.robotDrive.setDefaultCommand(
+        #     commands2.cmd.run(
+        #         lambda: self.robotDrive.robotDrive.arcadeDrive(
+        #             self.direction * self.inputFilter.calculate(
+        #                 shapeInputs(
+        #                     -self.driverControler.getLeftY(), self.scale_factor
+        #                 )
+        #             ),
+        #             shapeInputs(
+        #                 -self.driverControler.getRightX(), self.scale_factor
+        #             )
+        #         ),
+        #         self.robotDrive
+        #     )
+        #     # .alongWith(
+        #     #     commands2.cmd.run(
+        #     #         lambda: self.arm.shooterIdle()
+        #     #     )
+        #     # )
+            
+        # )
+    def setTeleopDefaultCommand(self):
+        return commands2.cmd.run(
+            lambda: self.robotDrive.robotDrive.arcadeDrive(
+                self.direction * self.inputFilter.calculate(
                     shapeInputs(
-                        -self.driverControler.getRightX(), self.scale_factor
+                        -self.driverControler.getLeftY(), self.scale_factor
                     )
                 ),
-                self.robotDrive
-            )
-            # .alongWith(
-            #     commands2.cmd.run(
-            #         lambda: self.arm.shooterIdle()
-            #     )
-            # )
-            
+                shapeInputs(
+                    -self.driverControler.getRightX(), self.scale_factor
+                )
+            ),
+            self.robotDrive
         )
-
+    
     def configureButtonBindings(self):
         self.driverControler.rightBumper().whileTrue(
             commands2.cmd.run(
@@ -194,6 +211,9 @@ class RobotContainer:
                 self.stopShooterObjectSlow
             )
         )
+        self.driverControler.start().whileTrue(
+            autoDriveForward(self.robotDrive)
+        )
         # .whileFalse(
         #     commands2.cmd.run(
         #         lambda: self.arm.disableShooter()
@@ -234,6 +254,30 @@ class RobotContainer:
         self.scale_factor = 1
         print(self.scale_factor)
 
-    def getAutonomousCommand(self):
-        return commands2.cmd.none()
+    def autonomousCommand(self):
+        self.arm.armTargetAngle = constants.shootingConsts.speakerPosition
+
+    def getAutonomousArmCommand(self):
+        return commands2.cmd.run(
+            self.autonomousCommand
+        )
+    def getAutoShootingCommand(self):
+        return commands2.cmd.SequentialCommandGroup(
+            commands2.cmd.waitSeconds(2)
+            # commands2.cmd.run(
+            #     self.arm.spinUpShooters()
+            # )
+            # commands2.cmd.waitSeconds(1),
+            # ShootNote(self.arm),
+            # commands2.cmd.waitSeconds(1),
+            # StopShooter(self.arm)
+        )
+
+    def getAutoDriveCommand(self):
+        return autoDriveForward(self.robotDrive)
     
+    def getAutoReverseDriveCommand(self):
+        return autoDriveBackwards(self.robotDrive)
+    
+    def getAutoEmptyDriveCommand(self):
+        return emptyDriveCommand(self.robotDrive)
