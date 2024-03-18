@@ -34,7 +34,8 @@ class MyRobot(commands2.TimedCommandRobot):
         self.container.arm.activate()  
 
     def robotPeriodic(self):
-        self.container.arm.updateArmPosition()
+        self.container.arm.updateArmPosition() 
+        self.container.robotDrive.updateDrive()
         commands2.CommandScheduler.getInstance().run()
     
     def autonomousInit(self):
@@ -42,7 +43,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # self.timer.restart()
 
         # Set default command (which should be sending 0, 0 to ArcadeDrive)
-        self.container.setAutoDefaultCommand()
+        # self.container.setAutoDefaultCommand()
         
         # self.autonomousArmCommand = self.container.getAutonomousArmCommand()
         # self.autonomousArmCommand.schedule()
@@ -58,14 +59,29 @@ class MyRobot(commands2.TimedCommandRobot):
         # self.autoReverseDrive = self.container.getAutoReverseDriveCommand()
         # self.autoReverseDrive.schedule()
 
+        '''
+        Steps for Auto:
+        - At the same time:
+            - Raise arm to shoot high
+            - Drive forward for a certain amount of time (see consts)
+        - Then, stop drive
+        - Perform shooting sequence:
+            - Spin up shooters
+            - Shoot note
+            - Stop shooters
+        - Then drive in reverse out of the auto zone for a certain amount of time
+        - Then stop drive
+        '''
 
         self.autonomousCommand = commands2.SequentialCommandGroup(
             commands2.ParallelCommandGroup(
                 self.container.getAutonomousArmCommand(),
                 self.container.getAutoDriveCommand()
             ),
+            self.container.getAutoStopDriveCommand(),
             self.container.getAutoShootingCommand(),
-            self.container.getAutoReverseDriveCommand()
+            self.container.getAutoReverseDriveCommand(),
+            self.container.getAutoStopDriveCommand()
         )
 
         self.autonomousCommand.schedule()

@@ -18,11 +18,12 @@ class autoDriveForward(commands2.Command):
         self.timePassed = self.timer.get()
 
     def execute(self):
-        # print(f"aDF.execute()")
+        print(f"aDF.execute()")
         # self.driveSubsystem.robotDrive.arcadeDrive(constants.autoConsts.driveSpeed, 0, False)
-        if self.timer.get() - self.timePassed > 0.002:
-            self.driveSubsystem.robotDrive.arcadeDrive(constants.autoConsts.driveSpeed, 0, False)
-            self.timePassed = self.timer.get()
+        self.driveSubsystem.drive(constants.autoConsts.driveSpeed, 0, False)
+        # if self.timer.get() - self.timePassed > 0.002:
+        #     self.driveSubsystem.robotDrive.arcadeDrive(constants.autoConsts.driveSpeed, 0, False)
+        #     self.timePassed = self.timer.get()
 
     def isFinished(self):
         # print(f"aDF.isFinished()")
@@ -33,4 +34,5 @@ class autoDriveForward(commands2.Command):
     def end(self, interrupted):
         # print(f"aDF.end()")
         self.timer.stop()
-        self.driveSubsystem.robotDrive.arcadeDrive(0, 0, False)
+        # self.driveSubsystem.robotDrive.arcadeDrive(0, 0, False)
+        # self.driveSubsystem.drive(0, 0, False)

@@ -29,5 +29,15 @@ class DriveSubsystem(commands2.Subsystem):
         self.rightDrive.setInverted(True)
 
         self.leftFrontEncoder = self.leftFront.getEncoder()
+
+        self.speed = 0
+        self.rotation = 0
+
+    def drive(self, speed, rotation):
+        self.speed = speed
+        self.rotation = rotation
+
+    def updateDrive(self):
+        self.robotDrive.arcadeDrive(self.speed, self.rotation)
         
     

@@ -14,6 +14,7 @@ from commands.detectNote import DetectNote
 from commands.gotoTaxiPosition import GotoTaxiPosition
 from commands.autoDriveForward import autoDriveForward
 from commands.autoDriveBackwards import autoDriveBackwards
+from commands.stopDriveCommand import StopDriveCommand
 
 import constants
 
@@ -66,10 +67,22 @@ class RobotContainer:
         #     # )
             
         # )
+
+        # lambda: self.robotDrive.robotDrive.arcadeDrive(
+                #     self.direction * self.inputFilter.calculate(
+                #         shapeInputs(
+                #             -self.driverControler.getLeftY(), self.scale_factor
+                #         )
+                #     ),
+                #     shapeInputs(
+                #         -self.driverControler.getRightX(), self.scale_factor
+                #     )
+                # ),
+        
     def setTeleopDefaultCommand(self):
         self.robotDrive.setDefaultCommand(
             commands2.cmd.run(
-                lambda: self.robotDrive.robotDrive.arcadeDrive(
+                lambda: self.robotDrive.drive(
                     self.direction * self.inputFilter.calculate(
                         shapeInputs(
                             -self.driverControler.getLeftY(), self.scale_factor
@@ -98,13 +111,14 @@ class RobotContainer:
         )
         '''
     
-    def setAutoDefaultCommand(self):
-        self.robotDrive.setDefaultCommand(
-            commands2.cmd.run(
-                lambda: self.robotDrive.robotDrive.arcadeDrive(0, 0),
-                self.robotDrive
-            )
-        )
+    # def setAutoDefaultCommand(self):
+    #     self.robotDrive.setDefaultCommand(
+    #         commands2.cmd.run(
+    #             lambda: self.robotDrive.robotDrive.arcadeDrive(0, 0),
+    #             self.robotDrive
+    #         )
+    #     )
+    #     self.robotDrive.setDefaultCommand(None)
     
     def configureButtonBindings(self):
         self.driverControler.rightBumper().whileTrue(
@@ -288,13 +302,14 @@ class RobotContainer:
     
     def getAutoShootingCommand(self):
         return commands2.cmd.SequentialCommandGroup(
-            commands2.cmd.waitSeconds(2),
+            # commands2.cmd.waitSeconds(2),
             commands2.cmd.run(
-                self.arm.spinUpShooters()
-            ),
-            commands2.cmd.waitSeconds(1),
-            ShootNote(self.arm),
-            commands2.cmd.waitSeconds(1),
+                # self.arm.spinUpShooters()  <-- forgot the lambda
+                lambda: self.arm.spinUpShooters()
+            ).repeatedly().withTimeout(1),
+            # commands2.cmd.waitSeconds(1),
+            ShootNote(self.arm).repeatedly().withTimeout(1),
+            # commands2.cmd.waitSeconds(1),
             StopShooter(self.arm)
         )
 
@@ -303,4 +318,7 @@ class RobotContainer:
     
     def getAutoReverseDriveCommand(self):
         return autoDriveBackwards(self.robotDrive)
+
+    def getAutoStopDriveCommand(self):
+        return StopDriveCommand(self.robotDrive)
     
