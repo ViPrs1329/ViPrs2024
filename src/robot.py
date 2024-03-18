@@ -12,6 +12,9 @@ import phoenix5
 import rev
 import commands2
 from robotContainer import RobotContainer
+from commands.pickupNote import PickupNote
+from commands.detectNote import DetectNote
+from commands.retractNote import Backup
 import constants
 
 class MyRobot(commands2.TimedCommandRobot):
@@ -71,8 +74,21 @@ class MyRobot(commands2.TimedCommandRobot):
             - Stop shooters
         - Then drive in reverse out of the auto zone for a certain amount of time
         - Then stop drive
+
+        Simple auto:
+        - Raise arm to shoot high
+        - Start shooting sequence
+        - Drive out of zone for period of time (Time TBD)
+        - Stop drive
+
+        
+        Moonshot additions:
+        - When driving out of the zone deploy arm for pickup
+        - Intake drive back to subwoofer shoot
+        - Move back out of the starting zone
         '''
 
+        '''
         self.autonomousCommand = commands2.SequentialCommandGroup(
             commands2.ParallelCommandGroup(
                 commands2.SequentialCommandGroup(
@@ -84,16 +100,59 @@ class MyRobot(commands2.TimedCommandRobot):
             self.container.getAutoShootingCommand(),        
             self.container.getAutoDriveCommand().repeatedly().withTimeout(1),
             self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
-            # self.container.getAutonomousArmCommand()
-            # self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(5)
-            # commands2.ParallelCommandGroup(
-            #     self.container.getAutonomousArmCommand(),
-            #     self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTime)
-            # ),
-            # self.container.getAutoStopDriveCommand(),
-            # self.container.getAutoShootingCommand(),
-            # self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveBackTime),
-            # self.container.getAutoStopDriveCommand()
+        )
+        '''
+
+        # Simplified auto, since we can start right next to the subwoofer
+        self.autonomousCommand = commands2.SequentialCommandGroup(
+            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
+            self.container.getAutoShootingCommand(),        
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
+        )
+
+        # Cherry on top if we can get this
+        '''
+        - Raise arm to speaker shooting angle
+        - Shoot
+        - Bring arm down to intake collecting angle while starting intake sequence
+        - Drive forward for 3* seconds
+        - Stop drive briefly
+        - Drive backward for 3* seconds
+        - Stop drive
+        - Raise arm to speaker shooting angle
+        - Shoot high
+        - Drive forward for 3* seconds
+        - Stop drive
+        '''
+        self.megaAutonomousCommand = commands2.SequentialCommandGroup(
+            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
+            self.container.getAutoShootingCommand(), 
+            commands2.ParallelCommandGroup(
+                commands2.cmd.run(
+                lambda: self.container.arm.goto(constants.armConsts.intakeAngle)
+                ).repeatedly().withTimeout(0.5),
+                commands2.cmd.SequentialCommandGroup(
+                    PickupNote(self.container.arm),
+                    DetectNote(self.container.arm),
+                    Backup(self.container.arm)
+                )
+            ),
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1),
+            self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1),
+            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
+            self.container.getAutoShootingCommand(), 
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
+        )
+
+        # This is a very simple auto. Just raise arm and shoot.
+        # Useful for when your alliance has a really talented auto 
+        self.verySimpleAutoCommand = commands2.SequentialCommandGroup(
+            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
+            self.container.getAutoShootingCommand()
         )
 
         self.autonomousCommand.schedule()
