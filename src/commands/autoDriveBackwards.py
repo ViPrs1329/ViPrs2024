@@ -18,19 +18,20 @@ class autoDriveBackwards(commands2.Command):
         self.timePassed = self.timer.get()
 
     def execute(self):
-        print("aDB.execute()")
+        print(f"aDB.execute()")
+        self.driveSubsystem.drive(-1.0 * constants.autoConsts.driveSpeed, 0)
         # self.driveSubsystem.robotDrive.arcadeDrive(constants.autoConsts.driveSpeed, 0, False)
-        if self.timer.get() - self.timePassed > 0.002:
+        # if self.timer.get() - self.timePassed > 0.002:
             # self.driveSubsystem.robotDrive.arcadeDrive(-1.0 * constants.autoConsts.driveSpeed, 0, False)
-            self.driveSubsystem.drive(-1.0 * constants.autoConsts.driveSpeed, 0, False)
-            self.timePassed = self.timer.get()
+            # self.driveSubsystem.drive(-1.0 * constants.autoConsts.driveSpeed, 0)
+            # self.timePassed = self.timer.get()
 
-    def isFinished(self):
-        hasElapsed = self.timer.hasElapsed(constants.autoConsts.driveBackTime)
-        print(hasElapsed)
-        return hasElapsed
+    # def isFinished(self):
+    #     hasElapsed = self.timer.hasElapsed(constants.autoConsts.driveBackTime)
+    #     print(hasElapsed)
+    #     return hasElapsed
     
-    def end(self, interrupted):
-        self.timer.stop()
+    # def end(self, interrupted):
+    #     self.timer.stop()
         # self.driveSubsystem.robotDrive.arcadeDrive(0, 0, False)
         # self.driveSubsystem.drive(0, 0, False)

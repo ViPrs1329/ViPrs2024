@@ -293,32 +293,41 @@ class RobotContainer:
         print(self.scale_factor)
 
     def autonomousArmCommand(self):
+        print("robotContainer.autonomousArmCommand()")
         self.arm.armTargetAngle = constants.shootingConsts.speakerPosition
 
     def getAutonomousArmCommand(self):
         return commands2.cmd.run(
-            self.autonomousArmCommand
+            lambda: self.autonomousArmCommand()
         )
     
     def getAutoShootingCommand(self):
         return commands2.cmd.SequentialCommandGroup(
-            # commands2.cmd.waitSeconds(2),
             commands2.cmd.run(
-                # self.arm.spinUpShooters()  <-- forgot the lambda
                 lambda: self.arm.spinUpShooters()
             ).repeatedly().withTimeout(1),
-            # commands2.cmd.waitSeconds(1),
             ShootNote(self.arm).repeatedly().withTimeout(1),
-            # commands2.cmd.waitSeconds(1),
-            StopShooter(self.arm)
+            StopShooter(self.arm).repeatedly().withTimeout(0.1)
         )
 
     def getAutoDriveCommand(self):
-        return autoDriveForward(self.robotDrive)
+        print("getAutoDriveCommand")
+        return commands2.cmd.run(
+            lambda: self.robotDrive.drive(constants.autoConsts.driveSpeed, 0)
+        )
+        # return autoDriveForward(self.robotDrive)
     
     def getAutoReverseDriveCommand(self):
-        return autoDriveBackwards(self.robotDrive)
+        print("getAutoReverseDriveCommand")
+        return commands2.cmd.run(
+            lambda: self.robotDrive.drive(-1.0 * constants.autoConsts.driveSpeed, 0)
+        )
+        # return autoDriveBackwards(self.robotDrive)
 
     def getAutoStopDriveCommand(self):
-        return StopDriveCommand(self.robotDrive)
+        print("getAutoStopDriveCommand")
+        return commands2.cmd.run(
+            lambda: self.robotDrive.drive(0, 0)
+        )
+        # return StopDriveCommand(self.robotDrive)
     

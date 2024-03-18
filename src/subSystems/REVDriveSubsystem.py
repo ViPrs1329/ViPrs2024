@@ -36,8 +36,10 @@ class DriveSubsystem(commands2.Subsystem):
     def drive(self, speed, rotation):
         self.speed = speed
         self.rotation = rotation
+        print(f"...drive({speed}, {rotation})")
 
     def updateDrive(self):
+        # print(f"DriveSubsystem.updateDrive() {self.speed}, {self.rotation}")
         self.robotDrive.arcadeDrive(self.speed, self.rotation)
         
     

@@ -75,13 +75,25 @@ class MyRobot(commands2.TimedCommandRobot):
 
         self.autonomousCommand = commands2.SequentialCommandGroup(
             commands2.ParallelCommandGroup(
-                self.container.getAutonomousArmCommand(),
-                self.container.getAutoDriveCommand()
-            ),
-            self.container.getAutoStopDriveCommand(),
-            self.container.getAutoShootingCommand(),
-            self.container.getAutoReverseDriveCommand(),
-            self.container.getAutoStopDriveCommand()
+                commands2.SequentialCommandGroup(
+                    self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(1),
+                    self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1),
+                ),
+                self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.1)
+            ),    
+            self.container.getAutoShootingCommand(),        
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(1),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
+            # self.container.getAutonomousArmCommand()
+            # self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(5)
+            # commands2.ParallelCommandGroup(
+            #     self.container.getAutonomousArmCommand(),
+            #     self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTime)
+            # ),
+            # self.container.getAutoStopDriveCommand(),
+            # self.container.getAutoShootingCommand(),
+            # self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveBackTime),
+            # self.container.getAutoStopDriveCommand()
         )
 
         self.autonomousCommand.schedule()

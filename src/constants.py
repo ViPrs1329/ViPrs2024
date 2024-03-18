@@ -26,14 +26,14 @@ class armConsts:
     motorToArmGearRatio = 82.5 # to 1
     intakeAngle = 0.0 # radians
     speakerAngle = 0.4 # radians
-    ampAngle = 1.5 # radians
+    ampAngle = 1.5 # was 1.5 radians
     dampingConstant = 1
     intakeSpeed = 0.8
     gravityDeadband = 0.1
 
 class shootingConsts:
     speakerPosition = 0.245
-    ampPositon = 1.88
+    ampPositon = 1.6 # was 1.88
     startingPosition = 1.5
     safePosition = 0
     shootingSpeedTop = 1
