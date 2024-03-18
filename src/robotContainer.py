@@ -14,7 +14,6 @@ from commands.detectNote import DetectNote
 from commands.gotoTaxiPosition import GotoTaxiPosition
 from commands.autoDriveForward import autoDriveForward
 from commands.autoDriveBackwards import autoDriveBackwards
-from commands.emptyDriveCommand import emptyDriveCommand
 
 import constants
 
@@ -68,6 +67,22 @@ class RobotContainer:
             
         # )
     def setTeleopDefaultCommand(self):
+        self.robotDrive.setDefaultCommand(
+            commands2.cmd.run(
+                lambda: self.robotDrive.robotDrive.arcadeDrive(
+                    self.direction * self.inputFilter.calculate(
+                        shapeInputs(
+                            -self.driverControler.getLeftY(), self.scale_factor
+                        )
+                    ),
+                    shapeInputs(
+                        -self.driverControler.getRightX(), self.scale_factor
+                    )
+                ),
+                self.robotDrive
+            )
+        )
+        ''' This is not how you set the default command VVV
         return commands2.cmd.run(
             lambda: self.robotDrive.robotDrive.arcadeDrive(
                 self.direction * self.inputFilter.calculate(
@@ -80,6 +95,15 @@ class RobotContainer:
                 )
             ),
             self.robotDrive
+        )
+        '''
+    
+    def setAutoDefaultCommand(self):
+        self.robotDrive.setDefaultCommand(
+            commands2.cmd.run(
+                lambda: self.robotDrive.robotDrive.arcadeDrive(0, 0),
+                self.robotDrive
+            )
         )
     
     def configureButtonBindings(self):
@@ -254,23 +278,24 @@ class RobotContainer:
         self.scale_factor = 1
         print(self.scale_factor)
 
-    def autonomousCommand(self):
+    def autonomousArmCommand(self):
         self.arm.armTargetAngle = constants.shootingConsts.speakerPosition
 
     def getAutonomousArmCommand(self):
         return commands2.cmd.run(
-            self.autonomousCommand
+            self.autonomousArmCommand
         )
+    
     def getAutoShootingCommand(self):
         return commands2.cmd.SequentialCommandGroup(
-            commands2.cmd.waitSeconds(2)
-            # commands2.cmd.run(
-            #     self.arm.spinUpShooters()
-            # )
-            # commands2.cmd.waitSeconds(1),
-            # ShootNote(self.arm),
-            # commands2.cmd.waitSeconds(1),
-            # StopShooter(self.arm)
+            commands2.cmd.waitSeconds(2),
+            commands2.cmd.run(
+                self.arm.spinUpShooters()
+            ),
+            commands2.cmd.waitSeconds(1),
+            ShootNote(self.arm),
+            commands2.cmd.waitSeconds(1),
+            StopShooter(self.arm)
         )
 
     def getAutoDriveCommand(self):
@@ -279,5 +304,3 @@ class RobotContainer:
     def getAutoReverseDriveCommand(self):
         return autoDriveBackwards(self.robotDrive)
     
-    def getAutoEmptyDriveCommand(self):
-        return emptyDriveCommand(self.robotDrive)

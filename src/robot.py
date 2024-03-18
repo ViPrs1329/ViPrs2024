@@ -13,6 +13,7 @@ import rev
 import commands2
 from robotContainer import RobotContainer
 import constants
+
 class MyRobot(commands2.TimedCommandRobot):
     autonomousCommand = None
     def robotInit(self):
@@ -26,7 +27,11 @@ class MyRobot(commands2.TimedCommandRobot):
         # result in both sides moving forward. Depending on how your robot's
         # gearbox is constructed, you might have to invert the left side instead.
         self.container = RobotContainer()
-        self.container.arm.activate()
+        
+        # Is this what we want at the beginning? It sets arm.isActive to True,
+        # But it also sets the Idle Mode of the arm speed controllers to
+        # Coast mode
+        self.container.arm.activate()  
 
     def robotPeriodic(self):
         self.container.arm.updateArmPosition()
@@ -35,40 +40,35 @@ class MyRobot(commands2.TimedCommandRobot):
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         # self.timer.restart()
+
+        # Set default command (which should be sending 0, 0 to ArcadeDrive)
+        self.container.setAutoDefaultCommand()
         
-        self.autonomousArmCommand = self.container.getAutonomousArmCommand()
-        self.autonomousArmCommand.schedule()
+        # self.autonomousArmCommand = self.container.getAutonomousArmCommand()
+        # self.autonomousArmCommand.schedule()
         # if self.autonomousArmCommand:
         #     self.autonomousArmCommand.schedule()
 
-        self.autoDrive = self.container.getAutoDriveCommand()
-        self.autoDrive.schedule()
+        # self.autoDrive = self.container.getAutoDriveCommand()
+        # self.autoDrive.schedule()
 
         # self.autoShooting = self.container.getAutoShootingCommand()
         # self.autoShooting.schedule()
 
-        commands2.cmd.waitSeconds(2).schedule()
-
-        self.autoReverseDrive = self.container.getAutoReverseDriveCommand()
-        self.autoReverseDrive.schedule()
-
-        # self.autoEmptyDrive = self.container.getAutoEmptyDriveCommand()
+        # self.autoReverseDrive = self.container.getAutoReverseDriveCommand()
+        # self.autoReverseDrive.schedule()
 
 
-        # self.autonomousCommand = commands2.SequentialCommandGroup(
-        #     self.autonomousArmCommand,
-        #     self.autoDrive
-        #     # self.autoShooting,
-        #     # self.autoReverseDrive
-        #     # commands2.ParallelCommandGroup(
-        #     #     commands2.SequentialCommandGroup(
-        #     #         self.autoDrive,
-        #     #         self.autoShooting
-        #     #     ),
-        #     #     self.autoEmptyDrive
-        #     # ),
-        #     # self.autoReverseDrive  
-        # ).schedule()
+        self.autonomousCommand = commands2.SequentialCommandGroup(
+            commands2.ParallelCommandGroup(
+                self.container.getAutonomousArmCommand(),
+                self.container.getAutoDriveCommand()
+            ),
+            self.container.getAutoShootingCommand(),
+            self.container.getAutoReverseDriveCommand()
+        )
+
+        self.autonomousCommand.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
@@ -88,8 +88,11 @@ class MyRobot(commands2.TimedCommandRobot):
         if self.autonomousCommand:
             self.autonomousCommand.cancel()
 
-        self.teleopDefaultCommand = self.container.setTeleopDefaultCommand()
-        self.teleopDefaultCommand.schedule()
+        # This is not how you set the default command
+        # self.teleopDefaultCommand = self.container.setTeleopDefaultCommand()
+        # self.teleopDefaultCommand.schedule()
+            
+        self.container.setTeleopDefaultCommand()
         
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""

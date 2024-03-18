@@ -80,7 +80,7 @@ class ArmSubsystem(commands2.Subsystem):
 
     def activate(self):
         self.isActive = True
-        self.armRight.setIdleMode(rev.CANSparkBase.IdleMode.kCoast)
+        self.armRight.setIdleMode(rev.CANSparkBase.IdleMode.kCoast) # Should we be setting these to coast mode?
         self.armLeft.setIdleMode(rev.CANSparkBase.IdleMode.kCoast)
 
     def deactivate(self):
