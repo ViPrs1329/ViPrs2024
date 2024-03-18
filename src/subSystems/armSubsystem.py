@@ -93,6 +93,7 @@ class ArmSubsystem(commands2.Subsystem):
 
     def updateArmPosition(self):
         if self.isActive:
+            print(f"control voltage: {self.controlVoltage}")
             delta = self.armTargetAngle - self.getArmPosition() # self.getArmPosition()
             """If we want the arm to move smoothly and precicesly, we need this:
             https://robotpy.readthedocs.io/projects/rev/en/stable/rev/SparkMaxPIDController.html
@@ -118,7 +119,7 @@ class ArmSubsystem(commands2.Subsystem):
             self.controlVoltage = P_voltage + gravity_feedforward_voltage
             # print(f"P_voltage: {P_voltage} - controlVoltage: {self.controlVoltage}")
             # print(f"getArmPosition(): {self.getArmPosition()}")
-            
+            print(f"controlVoltage: {self.controlVoltage}")
             #limit voltage if it's at the limit switch
             if self.bottomLimit.get() and self.controlVoltage < 0.0:
                 self.controlVoltage = 0.0
@@ -127,6 +128,7 @@ class ArmSubsystem(commands2.Subsystem):
                     
             self.controlVoltage = ArmSubsystem.clipValue(self.controlVoltage, 2.0, -2.0)
             # print(self.controlVoltage)
+            
             self.arm.setVoltage(self.controlVoltage)
 
     def spinUpShooters(self):
