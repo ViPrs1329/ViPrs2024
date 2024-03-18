@@ -45,3 +45,5 @@ class autoConsts:
     driveTime = 3
     driveSpeed = 0.2
     driveBackTime = 5
+    driveTimeSubToMiddleNote = 3
+    simpleDriveTimeOutOfZone = 4

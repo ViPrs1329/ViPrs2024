@@ -107,7 +107,7 @@ class MyRobot(commands2.TimedCommandRobot):
         self.autonomousCommand = commands2.SequentialCommandGroup(
             self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
             self.container.getAutoShootingCommand(),        
-            self.container.getAutoDriveCommand().repeatedly().withTimeout(1),
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
             self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
         )
 
@@ -138,13 +138,13 @@ class MyRobot(commands2.TimedCommandRobot):
                     Backup(self.container.arm)
                 )
             ),
-            self.container.getAutoDriveCommand().repeatedly().withTimeout(3),
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
             self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1),
-            self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(3),
+            self.container.getAutoReverseDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
             self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1),
             self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
             self.container.getAutoShootingCommand(), 
-            self.container.getAutoDriveCommand().repeatedly().withTimeout(3),
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.driveTimeSubToMiddleNote),
             self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
         )
 
