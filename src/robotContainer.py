@@ -124,6 +124,12 @@ class RobotContainer:
     #     self.robotDrive.setDefaultCommand(None)
     
     def configureButtonBindings(self):
+        def spinUpShooters():
+            self.arm.spinUpShooters()
+        
+        def spinUpShootersSlow():
+            self.arm.spinUpShootersSlow()
+
     #     self.driverControler.rightBumper().whileTrue(
     #         commands2.cmd.run(
     #             lambda: self.go_slow()
@@ -136,8 +142,10 @@ class RobotContainer:
     #         )
     #     )
 
+        # Right Bumper
+        # Toggle slow mode
         self.driverControler.rightBumper().onTrue(
-            ToggleSlow(self)
+            ToggleSlow(self) # Assign ToggleSlow command to right bumper
         )
 
         # def changeDirection():
@@ -165,23 +173,37 @@ class RobotContainer:
             ToggleReverse(self.robotDrive)
         )
 
+        # A button
+        # Make arm go to speaker scoring position
         self.driverControler.a().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
             )
         )
 
+        # B button
+        # Make arm go to amp scoring positino
         self.driverControler.b().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.shootingConsts.ampPositon)
             )
         )
 
+        # Y button
+        # Make arm go to intake position
         self.driverControler.y().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.armConsts.intakeAngle)
             )
         )
+
+        # X button
+        # Start a command sequence to:
+        # - Call pickup() method in arm subsystem which:
+        #   - Turns on the intake
+        # - Constantly checks to see if a note has been detected
+        # - If it has it backs the note out a bit based on the backup speed and backup time in constants
+        # - Go to the taxi position, which is the speaker scoring position so the arm doesn't drag on the ground
         self.driverControler.x().onTrue(
             commands2.cmd.SequentialCommandGroup(
                 self.pickupObject,
@@ -191,6 +213,8 @@ class RobotContainer:
             )
         )
 
+        # Another X button binding... (not sure why)
+        # Lowers arm to intake position
         self.driverControler.x().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.armConsts.intakeAngle)
@@ -213,14 +237,10 @@ class RobotContainer:
         #         lambda: self.arm.pewpew()
         #     )
         # )
-            
-        def spinUpShooters():
-            self.arm.spinUpShooters()
-        
-        def spinUpShootersSlow():
-            self.arm.spinUpShootersSlow()
 
-        # shooot into the speaker
+        # Right trigger 
+        # While the right trigger is held it will spin up the shooter
+        # and move the arm to the speaker position if not already there...
         self.driverControler.rightTrigger().whileTrue(
             commands2.cmd.run(
                 spinUpShooters
@@ -237,6 +257,10 @@ class RobotContainer:
             #     commands2.cmd.run(lambda: self.arm.disableShooter())
             # )
         )
+
+        # Right trigger when released
+        # This will turn on the intake delivering the note to the shooter
+        # Wait 1 second and then stop the shooter
         self.driverControler.rightTrigger().negate().whileTrue(
             commands2.cmd.SequentialCommandGroup(
                 self.shootNoteObject,
@@ -245,6 +269,9 @@ class RobotContainer:
             )
         )
 
+        # Left Trigger
+        # While the left trigger is held it will spin up the shooter
+        # and move the arm to the amp scoring position if not already there
         self.driverControler.leftTrigger().whileTrue(
             commands2.cmd.run(
                 spinUpShootersSlow
@@ -261,6 +288,10 @@ class RobotContainer:
             #     commands2.cmd.run(lambda: self.arm.disableShooter())
             # )
         )
+
+        # Left trigger when released
+        # This will turn on the intake delivering the note to the shooter
+        # Wait 1 second and then stop the shooter
         self.driverControler.leftTrigger().negate().whileTrue(
             commands2.cmd.SequentialCommandGroup(
                 self.shootNoteObjectSlow,
@@ -268,6 +299,10 @@ class RobotContainer:
                 self.stopShooterObjectSlow
             )
         )
+
+        # Start button
+        # Currently testing auto modes. 
+        # For DEBUG purposes only
         self.driverControler.start().whileTrue(
             autoDriveForward(self.robotDrive)
         )
@@ -276,20 +311,7 @@ class RobotContainer:
         #         lambda: self.arm.disableShooter()
         #     )
         # )
-        # self.driverControler.y().whileTrue(
-        #     commands2.cmd.sequence(
-        #         lambda: print("trigger"),
-        #         lambda: self.arm.spinUpShooters(),
-        #         commands2.cmd.waitSeconds(1),
-        #         lambda: self.arm.shoot(),
-        #         commands2.cmd.waitSeconds(1),
-        #         lambda: self.arm.disableShooter()
-        #     )
-        # ).whileFalse(
-        #     commands2.cmd.run(
-        #         lambda: self.arm.disableShooter()
-        #     )
-        # )
+        
     def MoveArmToZeroAndReset(self):
         moveCmd = commands2.cmd.run(
             print("would be running arm @ 30%")#self.arm.set(0.3)
@@ -343,19 +365,17 @@ class RobotContainer:
         return commands2.cmd.run(
             lambda: self.robotDrive.drive(constants.autoConsts.driveSpeed, 0)
         )
-        # return autoDriveForward(self.robotDrive)
     
     def getAutoReverseDriveCommand(self):
         print("getAutoReverseDriveCommand")
         return commands2.cmd.run(
             lambda: self.robotDrive.drive(-1.0 * constants.autoConsts.driveSpeed, 0)
         )
-        # return autoDriveBackwards(self.robotDrive)
 
     def getAutoStopDriveCommand(self):
         print("getAutoStopDriveCommand")
         return commands2.cmd.run(
             lambda: self.robotDrive.drive(0, 0)
         )
-        # return StopDriveCommand(self.robotDrive)
+    
     

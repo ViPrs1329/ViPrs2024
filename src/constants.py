@@ -43,8 +43,8 @@ class shootingConsts:
     backupSpeed = -0.5
 
 class autoConsts:
-    driveTime = 3
-    driveSpeed = 0.2
-    driveBackTime = 5
-    driveTimeSubToMiddleNote = 3
-    simpleDriveTimeOutOfZone = 4
+    # driveTime = 3  # TODO: At comp we need to figure out what time works best
+    driveSpeed = 0.2  # TODO: At comp we need to figure out what speed works best
+    driveBackTime = 5  # TODO: At comp we need to figure out what time works best
+    driveTimeSubToMiddleNote = 3  # TODO: If we have time, at comp we need to figure out what time works best
+    simpleDriveTimeOutOfZone = 4  # TODO: At comp we need to figure out what time works best
