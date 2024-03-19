@@ -15,13 +15,14 @@ class convert:
     
 class drivetrain:
     wheelDiameter = convert.in2m(6)
+    slowSpeed = 0.6
 
 class armConsts:
-    rotationSpeedScaler = 6 # 0.5
+    rotationSpeedScaler = 6.5 # was 6
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
-    gravityGain = 0.75
+    gravityGain = 0.5   # Was 0.5 and 0.75 before ; doesn't seem to be affecting the now slow, but graceful performance of the amr
     countsPerRev = 2048
     motorToArmGearRatio = 82.5 # to 1
     intakeAngle = 0.0 # radians
@@ -32,13 +33,13 @@ class armConsts:
     gravityDeadband = 0.1
 
 class shootingConsts:
-    speakerPosition = 0.245
-    ampPositon = 1.6 # was 1.88
+    speakerPosition = 0.3
+    ampPositon = 1.5 # was 1.88
     startingPosition = 1.5
     safePosition = 0
     shootingSpeedTop = 1
     shootingSpeedBottom = 1
-    backupTime = 0.1
+    backupTime = 0.025
     backupSpeed = -0.5
 
 class autoConsts:

@@ -34,7 +34,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # Is this what we want at the beginning? It sets arm.isActive to True,
         # But it also sets the Idle Mode of the arm speed controllers to
         # Coast mode
-        self.container.arm.activate()  
+        self.container.arm.activate()
 
     def robotPeriodic(self):
         self.container.arm.updateArmPosition() 
@@ -180,6 +180,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # self.teleopDefaultCommand.schedule()
             
         self.container.setTeleopDefaultCommand()
+        self.container.arm.armTargetAngle = constants.shootingConsts.speakerPosition
         
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
@@ -191,6 +192,7 @@ class MyRobot(commands2.TimedCommandRobot):
         commands2.CommandScheduler.getInstance().cancelAll()
         self.container.arm.zeroEncoders()
         self.container.MoveArmToZeroAndReset()
+        self.container.arm.armTargetAngle = 0
         
     def testPeriodic(self): 
         """This function is called periodically during test mode."""

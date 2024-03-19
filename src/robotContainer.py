@@ -15,6 +15,8 @@ from commands.gotoTaxiPosition import GotoTaxiPosition
 from commands.autoDriveForward import autoDriveForward
 from commands.autoDriveBackwards import autoDriveBackwards
 from commands.stopDriveCommand import StopDriveCommand
+from commands.toggleReverse import ToggleReverse
+from commands.toggleSlow import ToggleSlow
 
 import constants
 
@@ -43,6 +45,7 @@ class RobotContainer:
         self.gotoTaxiPositionObject = GotoTaxiPosition(self.arm)
         self.taxiFromAmp = GotoTaxiPosition(self.arm)
         self.direction = 1
+        self.isSlow = False
         self.configureButtonBindings()
         
         self.scale_factor = 1
@@ -121,31 +124,47 @@ class RobotContainer:
     #     self.robotDrive.setDefaultCommand(None)
     
     def configureButtonBindings(self):
-        self.driverControler.rightBumper().whileTrue(
-            commands2.cmd.run(
-                lambda: self.go_slow()
-            )
+    #     self.driverControler.rightBumper().whileTrue(
+    #         commands2.cmd.run(
+    #             lambda: self.go_slow()
+    #         )
+    #     )
+
+    #     self.driverControler.rightBumper().whileFalse(
+    #         commands2.cmd.run(
+    #             lambda: self.go_fast()
+    #         )
+    #     )
+
+        self.driverControler.rightBumper().onTrue(
+            ToggleSlow(self)
         )
 
-        self.driverControler.rightBumper().whileFalse(
-            commands2.cmd.run(
-                lambda: self.go_fast()
-            )
+        # def changeDirection():
+        #     print(f"chDir() - {self.direction}")
+        #     self.direction = -1.0 * self.direction
+
+        # def backwards():
+        #     self.direction = -1
+        # def forwards():
+        #     self.direction = 1
+        # self.driverControler.leftBumper().whileTrue(
+        #     commands2.cmd.run(
+        #         backwards
+        #     )
+        # )
+        # self.driverControler.leftBumper().whileFalse(
+        #     commands2.cmd.run(
+        #         forwards
+        #     )
+        # )
+
+        # Left Bumper
+        # Change drive driection
+        self.driverControler.leftBumper().onTrue(
+            ToggleReverse(self.robotDrive)
         )
-        def backwards():
-            self.direction = -1
-        def forwards():
-            self.direction = 1
-        self.driverControler.leftBumper().whileTrue(
-            commands2.cmd.run(
-                backwards
-            )
-        )
-        self.driverControler.leftBumper().whileFalse(
-            commands2.cmd.run(
-                forwards
-            )
-        )
+
         self.driverControler.a().whileTrue(
             commands2.cmd.run(
                 lambda: self.arm.goto(constants.shootingConsts.speakerPosition)
@@ -284,13 +303,22 @@ class RobotContainer:
         print(f"abs encoder pos right: {self.arm.armRightEncoder.getAbsolutePosition()} | abs encoder pos left: {self.arm.armLeftEncoder.getAbsolutePosition()}")
 
 
-    def go_slow(self):
-        self.scale_factor = 0.5
-        print(self.scale_factor)
+    # def go_slow(self):
+    #     self.scale_factor = constants.drivetrain.slowSpeed
+    #     print(self.scale_factor)
 
-    def go_fast(self):
-        self.scale_factor = 1
-        print(self.scale_factor)
+    # def go_fast(self):
+    #     self.scale_factor = 1
+    #     print(self.scale_factor)
+
+    def toggleSlow(self):
+        if self.isSlow:
+            self.scale_factor = 1
+            self.isSlow = False
+        else:
+            self.scale_factor = constants.drivetrain.slowSpeed
+            self.isSlow = True
+        # print(f"toggleSlow() - {self.isSlow}")
 
     def autonomousArmCommand(self):
         print("robotContainer.autonomousArmCommand()")

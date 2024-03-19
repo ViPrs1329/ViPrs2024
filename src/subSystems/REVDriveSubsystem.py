@@ -8,6 +8,9 @@ class DriveSubsystem(commands2.Subsystem):
     def __init__(self):
         super().__init__()
 
+        self.direction = 1.0
+
+
         self.leftFront = rev.CANSparkMax(4, rev.CANSparkMax.MotorType.kBrushless)
         self.leftBack = rev.CANSparkMax(3, rev.CANSparkMax.MotorType.kBrushless)
         self.rightFront = rev.CANSparkMax(2, rev.CANSparkMax.MotorType.kBrushless)
@@ -34,12 +37,15 @@ class DriveSubsystem(commands2.Subsystem):
         self.rotation = 0
 
     def drive(self, speed, rotation):
-        self.speed = speed
+        self.speed = self.direction * speed
         self.rotation = rotation
         # print(f"...drive({speed}, {rotation})")
 
     def updateDrive(self):
         # print(f"DriveSubsystem.updateDrive() {self.speed}, {self.rotation}")
         self.robotDrive.arcadeDrive(self.speed, self.rotation)
-        
-    
+
+    def toggleReverse(self):
+        self.direction = -1.0 * self.direction
+        # print(f"toggleRev - {self.direction}")
+

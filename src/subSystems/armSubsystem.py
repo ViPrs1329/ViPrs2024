@@ -48,8 +48,9 @@ class ArmSubsystem(commands2.Subsystem):
 
         # self.armRightEncoder.setPositionOffset(0.42430531060763277)
         # self.armLeftEncoder.setPositionOffset(0.5910043147751078)
-        self.armRightEncoder.setPositionOffset(0.42430531060763277)
-        self.armLeftEncoder.setPositionOffset(0.5910043147751078)
+        self.armRightEncoder.setPositionOffset(0.42530776063269404)
+        self.armLeftEncoder.setPositionOffset(0.5902090147552254)
+
 
         # Photo Sensor to detect if a note is loaded
         self.noteSensor = wpilib.DigitalInput(2) # change channel later
@@ -59,7 +60,7 @@ class ArmSubsystem(commands2.Subsystem):
         self.bottomLimit = wpilib.DigitalInput(1) # change channel later
         self.topLimit = wpilib.DigitalInput(9)
 
-        self.armTargetAngle = constants.shootingConsts.startingPosition
+        self.armTargetAngle = constants.shootingConsts.speakerPosition
         self.controlVoltage = 0.0
 
         self.isActive = True
@@ -80,8 +81,8 @@ class ArmSubsystem(commands2.Subsystem):
 
     def activate(self):
         self.isActive = True
-        self.armRight.setIdleMode(rev.CANSparkBase.IdleMode.kCoast) # Should we be setting these to coast mode?
-        self.armLeft.setIdleMode(rev.CANSparkBase.IdleMode.kCoast)
+        self.armRight.setIdleMode(rev.CANSparkBase.IdleMode.kBrake) # Should we be setting these to coast mode?
+        self.armLeft.setIdleMode(rev.CANSparkBase.IdleMode.kBrake)
 
     def deactivate(self):
         self.isActive = False
@@ -93,7 +94,7 @@ class ArmSubsystem(commands2.Subsystem):
 
     def updateArmPosition(self):
         if self.isActive:
-            print(f"control voltage: {self.controlVoltage}")
+            # print(f"control voltage: {self.controlVoltage}")
             delta = self.armTargetAngle - self.getArmPosition() # self.getArmPosition()
             """If we want the arm to move smoothly and precicesly, we need this:
             https://robotpy.readthedocs.io/projects/rev/en/stable/rev/SparkMaxPIDController.html
@@ -119,7 +120,7 @@ class ArmSubsystem(commands2.Subsystem):
             self.controlVoltage = P_voltage + gravity_feedforward_voltage
             # print(f"P_voltage: {P_voltage} - controlVoltage: {self.controlVoltage}")
             # print(f"getArmPosition(): {self.getArmPosition()}")
-            print(f"controlVoltage: {self.controlVoltage}")
+            # print(f"target: {self.armTargetAngle} cV: {self.controlVoltage} gFF: {gravity_feedforward_voltage}")
             #limit voltage if it's at the limit switch
             if self.bottomLimit.get() and self.controlVoltage < 0.0:
                 self.controlVoltage = 0.0
@@ -255,6 +256,7 @@ class ArmSubsystem(commands2.Subsystem):
 
     def __str__(self):
         """To string for robot's arm"""
-        return f"angle: {self.getArmPosition()}rad | target: {self.armTargetAngle}rad | voltage: {self.controlVoltage} | topLimit: {self.topLimit.get()} | bottomLimit: {self.bottomLimit.get()}"
+        return f"left: {self.armLeftEncoder.getAbsolutePosition()}, right: {self.armRightEncoder.getAbsolutePosition()}"
+        # return f"angle: {self.getArmPosition()}rad | target: {self.armTargetAngle}rad | voltage: {self.controlVoltage} | topLimit: {self.topLimit.get()} | bottomLimit: {self.bottomLimit.get()}"
 
  
