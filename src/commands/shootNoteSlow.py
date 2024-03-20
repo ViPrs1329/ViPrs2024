@@ -3,13 +3,13 @@ from subSystems.armSubsystem import ArmSubsystem
 
 import constants
 
-class ShootNote(commands2.Command):
+class ShootNoteSlow(commands2.Command):
     def __init__(self, arm: ArmSubsystem):
         super().__init__()
         self.arm = arm
 
     def initialize(self):
-        self.arm.shoot()
+        self.arm.shootSlow()
 
     def isFinished(self) -> bool:
         return True

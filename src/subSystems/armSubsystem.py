@@ -137,11 +137,16 @@ class ArmSubsystem(commands2.Subsystem):
         self.bottomShooter.set(constants.shootingConsts.shootingSpeedBottom)
 
     def spinUpShootersSlow(self):
-        self.topShooter.set(constants.shootingConsts.shootingSpeedTop / 2)
-        self.bottomShooter.set(constants.shootingConsts.shootingSpeedBottom / 2)
+        # self.topShooter.set(constants.shootingConsts.shootingSpeedTop / 2)
+        # self.bottomShooter.set(constants.shootingConsts.shootingSpeedBottom / 2)
+        self.topShooter.set(constants.shootingConsts.ampSpeed + 0.05)
+        self.bottomShooter.set(constants.shootingConsts.ampSpeed - 0.05)
 
     def shoot(self):
         self.intake.set(1)
+
+    def shootSlow(self):
+        self.intake.set(0.5)
 
     def disableShooter(self):
         self.topShooter.set(0)

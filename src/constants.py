@@ -18,7 +18,7 @@ class drivetrain:
     slowSpeed = 0.6
 
 class armConsts:
-    rotationSpeedScaler = 6.5 # was 6
+    rotationSpeedScaler = 7 # was 6
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
@@ -27,18 +27,19 @@ class armConsts:
     motorToArmGearRatio = 82.5 # to 1
     intakeAngle = 0.0 # radians
     speakerAngle = 0.4 # radians
-    ampAngle = 1.5 # was 1.5 radians
+    ampAngle = 1.6 # was 1.5 radians
     dampingConstant = 1
     intakeSpeed = 0.8
     gravityDeadband = 0.1
 
 class shootingConsts:
-    speakerPosition = 0.3
+    speakerPosition = 0.35
     ampPositon = 1.5 # was 1.88
     startingPosition = 1.5
     safePosition = 0
     shootingSpeedTop = 1
     shootingSpeedBottom = 1
+    ampSpeed = 0.15
     backupTime = 0.025
     backupSpeed = -0.5
 

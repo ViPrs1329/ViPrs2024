@@ -17,6 +17,9 @@ from commands.autoDriveBackwards import autoDriveBackwards
 from commands.stopDriveCommand import StopDriveCommand
 from commands.toggleReverse import ToggleReverse
 from commands.toggleSlow import ToggleSlow
+from commands.shootNoteSlow import ShootNoteSlow
+
+from wpilib import XboxController
 
 import constants
 
@@ -31,16 +34,17 @@ class RobotContainer:
     
     def __init__(self):
         self.driverControler = commands2.button.CommandXboxController(0)
+        self.wpiXboxController = XboxController(0)
         self.robotDrive = DriveSubsystem()
         self.arm = ArmSubsystem()
         self.shootNoteObject = ShootNote(self.arm)
         self.stopShooterObject = StopShooter(self.arm)
 
-        self.shootNoteObjectSlow = ShootNote(self.arm)
+        self.shootNoteObjectSlow = ShootNoteSlow(self.arm)
         self.stopShooterObjectSlow = StopShooter(self.arm)
         self.backupObject = Backup(self.arm)
-        self.pickupObject = PickupNote(self.arm)
-        self.detectNoteObject = DetectNote(self.arm)
+        self.pickupObject = PickupNote(self.arm, self.wpiXboxController)
+        self.detectNoteObject = DetectNote(self.arm, self.wpiXboxController)
         self.inputFilter = filter.SlewRateLimiter(2)
         self.gotoTaxiPositionObject = GotoTaxiPosition(self.arm)
         self.taxiFromAmp = GotoTaxiPosition(self.arm)
@@ -144,9 +148,9 @@ class RobotContainer:
 
         # Right Bumper
         # Toggle slow mode
-        self.driverControler.rightBumper().onTrue(
-            ToggleSlow(self) # Assign ToggleSlow command to right bumper
-        )
+        # self.driverControler.rightBumper().onTrue(
+        #     ToggleSlow(self) # Assign ToggleSlow command to right bumper
+        # )
 
         # def changeDirection():
         #     print(f"chDir() - {self.direction}")
@@ -156,16 +160,16 @@ class RobotContainer:
         #     self.direction = -1
         # def forwards():
         #     self.direction = 1
-        # self.driverControler.leftBumper().whileTrue(
-        #     commands2.cmd.run(
-        #         backwards
-        #     )
-        # )
-        # self.driverControler.leftBumper().whileFalse(
-        #     commands2.cmd.run(
-        #         forwards
-        #     )
-        # )
+        self.driverControler.rightBumper().whileTrue(
+            commands2.cmd.run(
+                lambda: self.go_slow()
+            )
+        )
+        self.driverControler.rightBumper().whileFalse(
+            commands2.cmd.run(
+                lambda: self.go_fast()
+            )
+        )
 
         # Left Bumper
         # Change drive driection
@@ -311,6 +315,12 @@ class RobotContainer:
         #         lambda: self.arm.disableShooter()
         #     )
         # )
+
+    def rumbleON(self):
+        self.wpiXboxController.setRumble(XboxController.RumbleType.kBothRumble, 0.5)
+
+    def rumbleOFF(self):
+        self.wpiXboxController.setRumble(XboxController.RumbleType.kBothRumble, 0)
         
     def MoveArmToZeroAndReset(self):
         moveCmd = commands2.cmd.run(
@@ -325,13 +335,13 @@ class RobotContainer:
         print(f"abs encoder pos right: {self.arm.armRightEncoder.getAbsolutePosition()} | abs encoder pos left: {self.arm.armLeftEncoder.getAbsolutePosition()}")
 
 
-    # def go_slow(self):
-    #     self.scale_factor = constants.drivetrain.slowSpeed
-    #     print(self.scale_factor)
+    def go_slow(self):
+        self.scale_factor = constants.drivetrain.slowSpeed
+        # print(self.scale_factor)
 
-    # def go_fast(self):
-    #     self.scale_factor = 1
-    #     print(self.scale_factor)
+    def go_fast(self):
+        self.scale_factor = 1
+        # print(self.scale_factor)
 
     def toggleSlow(self):
         if self.isSlow:

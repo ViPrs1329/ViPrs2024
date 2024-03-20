@@ -17,6 +17,8 @@ from commands.detectNote import DetectNote
 from commands.retractNote import Backup
 import constants
 
+import inspect
+
 class MyRobot(commands2.TimedCommandRobot):
     autonomousCommand = None
     def robotInit(self):
@@ -44,23 +46,6 @@ class MyRobot(commands2.TimedCommandRobot):
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         # self.timer.restart()
-
-        # Set default command (which should be sending 0, 0 to ArcadeDrive)
-        # self.container.setAutoDefaultCommand()
-        
-        # self.autonomousArmCommand = self.container.getAutonomousArmCommand()
-        # self.autonomousArmCommand.schedule()
-        # if self.autonomousArmCommand:
-        #     self.autonomousArmCommand.schedule()
-
-        # self.autoDrive = self.container.getAutoDriveCommand()
-        # self.autoDrive.schedule()
-
-        # self.autoShooting = self.container.getAutoShootingCommand()
-        # self.autoShooting.schedule()
-
-        # self.autoReverseDrive = self.container.getAutoReverseDriveCommand()
-        # self.autoReverseDrive.schedule()
 
         '''
         Steps for Auto:
@@ -166,6 +151,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # self.container.arm.goto(constants.shootingConsts.safePosition)
         commands2.CommandScheduler.getInstance().cancelAll()
         print("**DISABLED!**")
+        print(inspect.stack())
 
     def disabledPeriodic(self):
         pass
