@@ -8,6 +8,7 @@
 
 import wpilib
 import wpilib.cameraserver
+from cscore import CameraServer
 import wpilib.drive
 import phoenix5
 import rev
@@ -40,7 +41,9 @@ class MyRobot(commands2.TimedCommandRobot):
         self.container.arm.activate()
 
         # Start automatic capture of the USB camera
-        wpilib.CameraServer.launch()
+        # wpilib.CameraServer.launch()
+        camera = CameraServer.startAutomaticCapture()
+        camera.setFPS(15)
 
     def robotPeriodic(self):
         self.container.arm.updateArmPosition() 
@@ -154,6 +157,7 @@ class MyRobot(commands2.TimedCommandRobot):
     def disabledInit(self):
         # self.container.arm.goto(constants.shootingConsts.safePosition)
         commands2.CommandScheduler.getInstance().cancelAll()
+        self.container.arm.deactivate()
         print("**DISABLED!**")
         print(inspect.stack())
 

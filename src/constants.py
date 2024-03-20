@@ -21,10 +21,10 @@ class drivetrain:
 
 class armConsts:
     # PID Values
-    pGain = 7 # was 6   ; this is P   - try bringing this down  # formerly rotationSpeedScaler
+    pGain = 1.0 # P was 6 and 7   ; Retuning starting at 0.2 - try bringing this down  # formerly called rotationSpeedScaler
     iGain = 0.0  # I  start with 0.001
     dGain = 0.0  # D  start with 0.01
-    gravityGain = 0.5   # Was 0.5 and 0.75 before ; Try startign with 0.2 
+    gravityGain = 0.7   # Was 0.5 and 0.75 before ; Retuning starting at 0.2 --> 0.7 seems to be the optimal value in Brake Mode ; Coast mode requires 0.7 as well
     gravityDeadband = 0.1
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
@@ -38,8 +38,8 @@ class armConsts:
     intakeSpeed = 0.8
     intakeMaxStallCurrent = 25
     intakeMaxFreeCurrent = 25
-    armMaxStallCurrent = 30
-    armMaxFreeCurrent = 30
+    armMaxStallCurrent = 40   # started with 30, but the arm couldn't raise itself
+    armMaxFreeCurrent = 40    # started with 30, but the arm couldn't raise itself
 
 class shootingConsts:
     speakerPosition = 0.35
