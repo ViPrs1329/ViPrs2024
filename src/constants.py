@@ -21,11 +21,11 @@ class drivetrain:
 
 class armConsts:
     # PID Values
-    pGain = 1.0 # P was 6 and 7   ; Retuning starting at 0.2 - try bringing this down  # formerly called rotationSpeedScaler
-    iGain = 0.0  # I  start with 0.001
-    dGain = 0.0  # D  start with 0.01
-    gravityGain = 0.7   # Was 0.5 and 0.75 before ; Retuning starting at 0.2 --> 0.7 seems to be the optimal value in Brake Mode ; Coast mode requires 0.7 as well
-    gravityDeadband = 0.1
+    pGain = 6.0 # P was 6 and 7   ; Retuning starting at 0.2 - try bringing this down  # formerly called rotationSpeedScaler
+    iGain = 0.7  # I  start with 1/100th of P
+    dGain = 0.15  # D  start with 1/10th of P
+    gravityGain = 0.9   # Was 0.5 and 0.75 before ; Retuning starting at 0.2 --> 0.7 seems to be the optimal value in Brake Mode ; Coast mode requires 0.7 as well
+    gravityDeadband = 0.10
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi

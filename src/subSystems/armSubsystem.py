@@ -98,6 +98,7 @@ class ArmSubsystem(commands2.Subsystem):
     def goto(self, angle):
         self.activate()
         self.armTargetAngle = angle
+        self.resetPIDController()
         # print(f"goto {self.armTargetAngle}")
 
     def activate(self):
@@ -113,6 +114,11 @@ class ArmSubsystem(commands2.Subsystem):
         # self.armLeft.setIdleMode(rev.CANSparkBase.IdleMode.kCoast)
         self.armRight.setIdleMode(rev.CANSparkBase.IdleMode.kBrake) # Should we be setting these to coast mode?
         self.armLeft.setIdleMode(rev.CANSparkBase.IdleMode.kBrake)
+
+    def resetPIDController(self):
+        self.errorSum = 0
+        # self.previousError = 0  For some reason resetting the previous error makes the controller go crazy when changing setpoints
+        self.lastTimestamp = time.time()
 
     def getArmVelocity(self):
         return constants.convert.rev2rad((self.motorArmLeftEncoder.getVelocity() - self.motorArmRightEncoder.getVelocity()))/constants.armConsts.motorToArmGearRatio
@@ -140,20 +146,23 @@ class ArmSubsystem(commands2.Subsystem):
 
             #                                                                   if target angle is less than deadband, set gravity to 0 because arm hovers over position when position is set to 0
             gravity_feedforward_voltage = constants.armConsts.gravityGain * Derek.cos(self.getArmPosition()) * ((self.armTargetAngle > constants.armConsts.gravityDeadband) or (self.getArmPosition() > constants.armConsts.gravityDeadband))
+            
 
-            self.controlVoltage = P_voltage + gravity_feedforward_voltage
+            # self.controlVoltage = P_voltage + gravity_feedforward_voltage
             # self.controlVoltage = P_voltage + D_voltage + gravity_feedforward_voltage
-            # self.controlVoltage = P_voltage + I_voltage + D_voltage + gravity_feedforward_voltage
+            self.controlVoltage = P_voltage + I_voltage + D_voltage + gravity_feedforward_voltage
 
             #limit voltage if it's at the limit switch
             if self.bottomLimit.get() and self.controlVoltage < 0.0:
+                # print("bLim True and cV < 0")
                 self.controlVoltage = 0.0
             elif self.topLimit.get() and self.controlVoltage > 0.0:
+                # print("tLim True and cV > 0")
                 self.controlVoltage = 0.0
                     
-            # self.controlVoltage = ArmSubsystem.clipValue(self.controlVoltage, 2.0, -2.0)
+            self.controlVoltage = ArmSubsystem.clipValue(self.controlVoltage, 2.0, -2.0)
 
-            print(f"cV: {round(self.controlVoltage, 2)}, pV: {round(P_voltage, 2)}, Iv: {round(I_voltage, 2)}, Dv: {round(D_voltage, 2)}, gFF: {round(gravity_feedforward_voltage, 2)}, cP: {round(currentAngle, 2)} delta: {round(delta, 2)} tA: {round(self.armTargetAngle, 2)}")
+            print(f"cV: {round(self.controlVoltage, 2)}, pV: {round(P_voltage, 2)}, Iv: {round(I_voltage, 2)}, eS: {round(self.errorSum, 2)}, dT: {round(deltaTime, 2)}, Dv: {round(D_voltage, 2)}, gFF: {round(gravity_feedforward_voltage, 2)}, cP: {round(currentAngle, 2)} delta: {round(delta, 2)} tA: {round(self.armTargetAngle, 2)} bL: {self.bottomLimit.get()}, tL: {self.topLimit.get()}")
 
             self.arm.setVoltage(self.controlVoltage)
 
