@@ -16,6 +16,8 @@ class convert:
 class drivetrain:
     wheelDiameter = convert.in2m(6)
     slowSpeed = 0.6
+    maxStallCurrent = 30
+    maxFreeCurrent = 30
 
 class armConsts:
     rotationSpeedScaler = 7 # was 6
@@ -31,6 +33,10 @@ class armConsts:
     dampingConstant = 1
     intakeSpeed = 0.8
     gravityDeadband = 0.1
+    intakeMaxStallCurrent = 25
+    intakeMaxFreeCurrent = 25
+    armMaxStallCurrent = 30
+    armMaxFreeCurrent = 30
 
 class shootingConsts:
     speakerPosition = 0.35
@@ -42,6 +48,8 @@ class shootingConsts:
     ampSpeed = 0.15
     backupTime = 0.025
     backupSpeed = -0.5
+    shooterMaxStallCurrent = 30
+    shooterMaxFreeCurrent = 30
 
 class autoConsts:
     # driveTime = 3  # TODO: At comp we need to figure out what time works best

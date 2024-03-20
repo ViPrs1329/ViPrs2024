@@ -32,6 +32,20 @@ class ArmSubsystem(commands2.Subsystem):
         self.bottomShooter.IdleMode(rev.CANSparkBase.IdleMode.kCoast)
         self.intake.IdleMode(rev.CANSparkBase.IdleMode.kBrake)
 
+        # Added Smart Current limits to prevent our motors from burning out upon stall
+        # and to prevent brown outs
+        self.armRight.setSmartCurrentLimit(stallLimit=constants.armConsts.armMaxStallCurrent, freeLimit=constants.armConsts.armMaxFreeCurrent)
+        self.armLeft.setSmartCurrentLimit(stallLimit=constants.armConsts.armMaxStallCurrent, freeLimit=constants.armConsts.armMaxFreeCurrent)
+        self.topShooter.setSmartCurrentLimit(stallLimit=constants.shootingConsts.shooterMaxStallCurrent, freeLimit=constants.shootingConsts.shooterMaxFreeCurrent)
+        self.bottomShooter.setSmartCurrentLimit(stallLimit=constants.shootingConsts.shooterMaxStallCurrent, freeLimit=constants.shootingConsts.shooterMaxFreeCurrent)
+        self.intake.setSmartCurrentLimit(stallLimit=constants.armConsts.intakeMaxStallCurrent, freeLimit=constants.armConsts.intakeMaxFreeCurrent)
+
+        self.armRight.burnFlash()
+        self.armLeft.burnFlash()
+        self.topShooter.burnFlash()
+        self.bottomShooter.burnFlash()
+        self.intake.burnFlash()
+
         self.motorArmRightEncoder = self.armRight.getEncoder()
         self.motorArmLeftEncoder = self.armLeft.getEncoder()
         self.topShooterEncoder = self.topShooter.getEncoder()

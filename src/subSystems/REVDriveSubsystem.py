@@ -21,6 +21,19 @@ class DriveSubsystem(commands2.Subsystem):
         self.rightFront.setIdleMode(rev.CANSparkBase.IdleMode.kBrake)
         self.rightBack.setIdleMode(rev.CANSparkBase.IdleMode.kBrake)
 
+        # Added Smart Current limits to prevent our motors from burning out upon stall
+        # and to prevent brown outs
+        self.leftFront.setSmartCurrentLimit(stallLimit=constants.drivetrain.maxStallCurrent, freeLimit=constants.drivetrain.maxFreeCurrent)
+        self.leftBack.setSmartCurrentLimit(stallLimit=constants.drivetrain.maxStallCurrent, freeLimit=constants.drivetrain.maxFreeCurrent)
+        self.rightFront.setSmartCurrentLimit(stallLimit=constants.drivetrain.maxStallCurrent, freeLimit=constants.drivetrain.maxFreeCurrent)
+        self.rightBack.setSmartCurrentLimit(stallLimit=constants.drivetrain.maxStallCurrent, freeLimit=constants.drivetrain.maxFreeCurrent)
+
+        # Burning config to flash just in case there is a brown out, which would just load the default config
+        self.leftFront.burnFlash()
+        self.leftBack.burnFlash()
+        self.rightFront.burnFlash()
+        self.rightBack.burnFlash()
+
         self.leftDrive = wpilib.MotorControllerGroup(self.leftFront, self.leftBack)
         self.rightDrive = wpilib.MotorControllerGroup(self.rightFront, self.rightBack)
         
