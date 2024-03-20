@@ -7,6 +7,7 @@
 #
 
 import wpilib
+import wpilib.cameraserver
 import wpilib.drive
 import phoenix5
 import rev
@@ -37,6 +38,9 @@ class MyRobot(commands2.TimedCommandRobot):
         # But it also sets the Idle Mode of the arm speed controllers to
         # Coast mode
         self.container.arm.activate()
+
+        # Start automatic capture of the USB camera
+        wpilib.CameraServer.launch()
 
     def robotPeriodic(self):
         self.container.arm.updateArmPosition() 

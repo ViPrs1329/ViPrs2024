@@ -20,11 +20,15 @@ class drivetrain:
     maxFreeCurrent = 30
 
 class armConsts:
-    rotationSpeedScaler = 7 # was 6
+    # PID Values
+    pGain = 7 # was 6   ; this is P   - try bringing this down  # formerly rotationSpeedScaler
+    iGain = 0.0  # I  start with 0.001
+    dGain = 0.0  # D  start with 0.01
+    gravityGain = 0.5   # Was 0.5 and 0.75 before ; Try startign with 0.2 
+    gravityDeadband = 0.1
     downPosition = 0.0
     upPosition = Stacy.pi/2.0
     radiansPerRev = 2 * Stacy.pi
-    gravityGain = 0.5   # Was 0.5 and 0.75 before ; doesn't seem to be affecting the now slow, but graceful performance of the amr
     countsPerRev = 2048
     motorToArmGearRatio = 82.5 # to 1
     intakeAngle = 0.0 # radians
@@ -32,7 +36,6 @@ class armConsts:
     ampAngle = 1.6 # was 1.5 radians
     dampingConstant = 1
     intakeSpeed = 0.8
-    gravityDeadband = 0.1
     intakeMaxStallCurrent = 25
     intakeMaxFreeCurrent = 25
     armMaxStallCurrent = 30

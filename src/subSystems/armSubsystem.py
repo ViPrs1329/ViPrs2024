@@ -2,6 +2,7 @@ import wpilib
 import wpilib.drive
 import commands2
 import rev
+import time
 import constants
 import numpy as Derek
 
@@ -80,6 +81,11 @@ class ArmSubsystem(commands2.Subsystem):
         self.isActive = True
         self.pickupOveride = False
 
+        # Initialize your variables here
+        self.previousError = 0  # For D component
+        self.errorSum = 0  # For I component
+        self.lastTimestamp = 0  # For time delta calculation
+
     def clipValue(value, upperBound, lowerBound):
         assert upperBound > lowerBound
         if value > upperBound:
@@ -108,33 +114,31 @@ class ArmSubsystem(commands2.Subsystem):
 
     def updateArmPosition(self):
         if self.isActive:
-            # print(f"control voltage: {self.controlVoltage}")
-            delta = self.armTargetAngle - self.getArmPosition() # self.getArmPosition()
-            """If we want the arm to move smoothly and precicesly, we need this:
-            https://robotpy.readthedocs.io/projects/rev/en/stable/rev/SparkMaxPIDController.html
-            starting with the P gain being our "rotationSpeedScalar" and feedforward gain being 
-            gravityGain * cos(angle) should be similar behavior to what we have now.
-            Then we can play with the accel profile & D gain to slow down the initial speed,
-            and we can play with the I gain to increase the precision of the final angle.
-            
-            """
+            currentTime = time.time()
+            deltaTime = currentTime - self.lastTimestamp
+            self.lastTimestamp = currentTime
 
-            P_voltage = delta * constants.armConsts.rotationSpeedScaler
+            currentAngle = self.getArmPosition()
+            delta = self.armTargetAngle - currentAngle
+
+
+            P_voltage = delta * constants.armConsts.pGain
+
+            # Update for I component
+            self.errorSum += delta * deltaTime
+            I_voltage = self.errorSum * constants.armConsts.iGain
+
+            # Update for D component
+            derivative = (delta - self.previousError) / deltaTime
+            D_voltage = derivative * constants.armConsts.dGain
+            self.previousError = delta
 
             #                                                                   if target angle is less than deadband, set gravity to 0 because arm hovers over position when position is set to 0
             gravity_feedforward_voltage = constants.armConsts.gravityGain * Derek.cos(self.getArmPosition()) * ((self.armTargetAngle > constants.armConsts.gravityDeadband) or (self.getArmPosition() > constants.armConsts.gravityDeadband))
-            # print(f"AP: {self.getArmPosition()}, D: {delta}, G: {gravity_feedforward_voltage}")
-            # self.armLeftPIDController.setP(constants.armConsts.rotationSpeedScaler)
-            # self.armLeftPIDController.setI(0)
-            # self.armLeftPIDController.setD(0)
-            # self.armRightPIDController.setP(constants.armConsts.rotationSpeedScaler)
-            # self.armRightPIDController.setI(0)
-            # self.armRightPIDController.setD(0)
 
             self.controlVoltage = P_voltage + gravity_feedforward_voltage
-            # print(f"P_voltage: {P_voltage} - controlVoltage: {self.controlVoltage}")
-            # print(f"getArmPosition(): {self.getArmPosition()}")
-            # print(f"target: {self.armTargetAngle} cV: {self.controlVoltage} gFF: {gravity_feedforward_voltage}")
+            # self.controlVoltage = P_voltage + I_voltage + D_voltage + gravity_feedforward_voltage
+
             #limit voltage if it's at the limit switch
             if self.bottomLimit.get() and self.controlVoltage < 0.0:
                 self.controlVoltage = 0.0
@@ -142,8 +146,9 @@ class ArmSubsystem(commands2.Subsystem):
                 self.controlVoltage = 0.0
                     
             self.controlVoltage = ArmSubsystem.clipValue(self.controlVoltage, 2.0, -2.0)
-            # print(self.controlVoltage)
-            
+
+            print(f"cV: {self.controlVoltage}, pV: {P_voltage}, Iv: {I_voltage}, Dv: {D_voltage}, gFF: {gravity_feedforward_voltage}, delta: {delta}")
+
             self.arm.setVoltage(self.controlVoltage)
 
     def spinUpShooters(self):

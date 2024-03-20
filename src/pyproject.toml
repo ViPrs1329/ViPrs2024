@@ -13,8 +13,8 @@ robotpy_version = "2024.3.1.0"
 robotpy_extras = [
     # "all"
     # "apriltag"
-     "commands2",
-    # "cscore"
+    "commands2",
+    "cscore",   # cscore is needed for USB camera support
     "navx",
     # "pathplannerlib"
     #"phoenix5",
