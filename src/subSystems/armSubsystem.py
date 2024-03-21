@@ -49,6 +49,13 @@ class ArmSubsystem(commands2.Subsystem):
 
         self.motorArmRightEncoder = self.armRight.getEncoder()
         self.motorArmLeftEncoder = self.armLeft.getEncoder()
+
+        self.motorArmRightEncoder.setPositionConversionFactor(constants.armConsts.motorToArmGearRatio)
+        self.motorArmLeftEncoder.setPositionConversionFactor(constants.armConsts.motorToArmGearRatio)
+
+        self.motorArmRightEncoder.setPosition(0.25)
+        self.motorArmLeftEncoder.setPosition(0.25)
+
         self.topShooterEncoder = self.topShooter.getEncoder()
         self.bottomShooterEncoder = self.bottomShooter.getEncoder()
         self.intakeEncoder = self.intake.getEncoder()
@@ -165,6 +172,7 @@ class ArmSubsystem(commands2.Subsystem):
             print(f"cV: {round(self.controlVoltage, 2)}, pV: {round(P_voltage, 2)}, Iv: {round(I_voltage, 2)}, eS: {round(self.errorSum, 2)}, dT: {round(deltaTime, 2)}, Dv: {round(D_voltage, 2)}, gFF: {round(gravity_feedforward_voltage, 2)}, cP: {round(currentAngle, 2)} delta: {round(delta, 2)} tA: {round(self.armTargetAngle, 2)} bL: {self.bottomLimit.get()}, tL: {self.topLimit.get()}")
 
             self.arm.setVoltage(self.controlVoltage)
+        print(f"cp: {round(self.getArmPosition(), 2)}, lE: {round(self.getArmLeftPosition(),2)} rE: {round(self.getArmRightPosition(),2)} relP: {round(self.getArmPositionRelative(), 2)}")
 
     def spinUpShooters(self):
         self.topShooter.set(constants.shootingConsts.shootingSpeedTop)
@@ -259,13 +267,14 @@ class ArmSubsystem(commands2.Subsystem):
         """returns the arm's position in rad, averaged between the two encoders"""
         # posRight = constants.convert.rev2rad(constants.convert.count2rev(self.armRightEncoderRelative.get()))
         # posLeft = constants.convert.rev2rad(constants.convert.count2rev(self.armLeftEncoderRelative.get()))
-        posRight = constants.convert.rev2rad(self.motorArmRightEncoder.getPosition()/constants.armConsts.motorToArmGearRatio)
+        posRight = constants.convert.rev2rad(self.motorArmRightEncoder.getPosition())
         # posLeft = self.motorArmLeftEncoder.getPosition()
         
         return posRight
 
     def getArmPosition(self):
         return constants.convert.rev2rad((self.getArmRightPosition() - self.getArmLeftPosition()) / 2)
+        # return self.getArmPositionRelative()
     
     def getArmRightPosition(self):
         # return self.armRightEncoder.getAbsolutePosition() - self.armRightEncoder.getPositionOffset()

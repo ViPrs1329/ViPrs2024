@@ -18,6 +18,7 @@ class drivetrain:
     slowSpeed = 0.6
     maxStallCurrent = 30
     maxFreeCurrent = 30
+    steeringScaleFactor = 0.8
 
 class armConsts:
     # PID Values
@@ -42,7 +43,7 @@ class armConsts:
     armMaxFreeCurrent = 40    # started with 30, but the arm couldn't raise itself
 
 class shootingConsts:
-    speakerPosition = 0.35
+    speakerPosition = 0.3
     ampPositon = 1.5 # was 1.88
     startingPosition = 1.5
     safePosition = 0
@@ -56,7 +57,7 @@ class shootingConsts:
 
 class autoConsts:
     # driveTime = 3  # TODO: At comp we need to figure out what time works best
-    driveSpeed = 0.2  # TODO: At comp we need to figure out what speed works best
+    driveSpeed = 0.4  # TODO: At comp we need to figure out what speed works best
     driveBackTime = 5  # TODO: At comp we need to figure out what time works best
     driveTimeSubToMiddleNote = 3  # TODO: If we have time, at comp we need to figure out what time works best
-    simpleDriveTimeOutOfZone = 4  # TODO: At comp we need to figure out what time works best
+    simpleDriveTimeOutOfZone = 3  # TODO: At comp we need to figure out what time works best

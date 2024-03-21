@@ -97,7 +97,7 @@ class RobotContainer:
                     ),
                     shapeInputs(
                         -self.driverControler.getRightX(), self.scale_factor
-                    )
+                    ) * constants.drivetrain.steeringScaleFactor
                 ),
                 self.robotDrive
             )
@@ -354,7 +354,8 @@ class RobotContainer:
 
     def autonomousArmCommand(self):
         print("robotContainer.autonomousArmCommand()")
-        self.arm.armTargetAngle = constants.shootingConsts.speakerPosition
+        # self.arm.armTargetAngle = constants.shootingConsts.speakerPosition
+        self.arm.goto(constants.shootingConsts.speakerPosition)
 
     def getAutonomousArmCommand(self):
         return commands2.cmd.run(

@@ -54,6 +54,8 @@ class MyRobot(commands2.TimedCommandRobot):
         """This function is run once each time the robot enters autonomous mode."""
         # self.timer.restart()
 
+        print("autoInit()")
+
         '''
         Steps for Auto:
         - At the same time:
@@ -95,13 +97,13 @@ class MyRobot(commands2.TimedCommandRobot):
         )
         '''
 
-        # Simplified auto, since we can start right next to the subwoofer
-        self.autonomousCommand = commands2.SequentialCommandGroup(
-            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
-            self.container.getAutoShootingCommand(),        
-            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
-            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
-        )
+        # # Simplified auto, since we can start right next to the subwoofer
+        # self.autonomousCommand = commands2.SequentialCommandGroup(
+        #     self.container.getAutonomousArmCommand().repeatedly().withTimeout(4.0),
+        #     self.container.getAutoShootingCommand(),        
+        #     self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
+        #     self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
+        # )
 
         # Cherry on top if we can get this
         '''
@@ -143,14 +145,17 @@ class MyRobot(commands2.TimedCommandRobot):
         # This is a very simple auto. Just raise arm and shoot.
         # Useful for when your alliance has a really talented auto 
         self.verySimpleAutoCommand = commands2.SequentialCommandGroup(
-            self.container.getAutonomousArmCommand().repeatedly().withTimeout(0.5),
-            self.container.getAutoShootingCommand()
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
         )
 
-        self.autonomousCommand.schedule()
+        # self.autonomousCommand.schedule()
+        self.verySimpleAutoCommand.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
+
+        print("autoPeriodic")
 
         pass
 
