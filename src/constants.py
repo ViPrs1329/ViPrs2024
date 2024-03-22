@@ -41,6 +41,8 @@ class armConsts:
     intakeMaxFreeCurrent = 25
     armMaxStallCurrent = 40   # started with 30, but the arm couldn't raise itself
     armMaxFreeCurrent = 40    # started with 30, but the arm couldn't raise itself
+    extractionSpeed = -1
+    extractionTime = 1
 
 class shootingConsts:
     speakerPosition = 0.3

@@ -18,6 +18,7 @@ from commands.stopDriveCommand import StopDriveCommand
 from commands.toggleReverse import ToggleReverse
 from commands.toggleSlow import ToggleSlow
 from commands.shootNoteSlow import ShootNoteSlow
+from commands.extractNote import Extract
 
 from wpilib import XboxController
 
@@ -196,9 +197,7 @@ class RobotContainer:
         # Y button
         # Make arm go to intake position
         self.driverControler.y().whileTrue(
-            commands2.cmd.run(
-                lambda: self.arm.goto(constants.armConsts.intakeAngle)
-            )
+            Extract(self.arm)
         )
 
         # X button
