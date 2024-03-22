@@ -97,13 +97,13 @@ class MyRobot(commands2.TimedCommandRobot):
         )
         '''
 
-        # # Simplified auto, since we can start right next to the subwoofer
-        # self.autonomousCommand = commands2.SequentialCommandGroup(
-        #     self.container.getAutonomousArmCommand().repeatedly().withTimeout(4.0),
-        #     self.container.getAutoShootingCommand(),        
-        #     self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
-        #     self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
-        # )
+        # Simplified auto, since we can start right next to the subwoofer
+        self.autonomousCommand = commands2.SequentialCommandGroup(
+            self.container.getAutonomousArmCommand().repeatedly().withTimeout(4.0),
+            self.container.getAutoShootingCommand(),        
+            self.container.getAutoDriveCommand().repeatedly().withTimeout(constants.autoConsts.simpleDriveTimeOutOfZone),
+            self.container.getAutoStopDriveCommand().repeatedly().withTimeout(0.1)
+        )
 
         # Cherry on top if we can get this
         '''
