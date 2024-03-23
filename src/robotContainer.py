@@ -19,6 +19,7 @@ from commands.toggleReverse import ToggleReverse
 from commands.toggleSlow import ToggleSlow
 from commands.shootNoteSlow import ShootNoteSlow
 from commands.extractNote import Extract
+from commands.unscheduleShooting import Unschedule
 
 from wpilib import XboxController
 
@@ -209,6 +210,7 @@ class RobotContainer:
         # - Go to the taxi position, which is the speaker scoring position so the arm doesn't drag on the ground
         self.driverControler.x().onTrue(
             commands2.cmd.SequentialCommandGroup(
+                # Unschedule(self.arm, self.stopShooterObjectSlow),
                 self.pickupObject,
                 self.detectNoteObject,
                 self.backupObject,
@@ -314,6 +316,12 @@ class RobotContainer:
         #         lambda: self.arm.disableShooter()
         #     )
         # )
+
+        self.driverControler.povUp().whileTrue(
+            commands2.cmd.run(
+                lambda: commands2.CommandScheduler.getInstance().cancelAll()
+            )
+        )
 
     def rumbleON(self):
         self.wpiXboxController.setRumble(XboxController.RumbleType.kBothRumble, 0.5)
